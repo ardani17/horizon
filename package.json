@@ -1,0 +1,31 @@
+{
+  "name": "horizon-trader-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Horizon Trader Platform — komunitas trader dengan integrasi Telegram Bot dan website retro blogger",
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:bot": "npm run dev --workspace=bot",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:bot": "npm run build --workspace=bot",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:property": "vitest --run --config vitest.property.config.ts"
+  },
+  "workspaces": [
+    "frontend",
+    "bot",
+    "shared"
+  ],
+  "devDependencies": {
+    "@types/supertest": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "fast-check": "^3.19.0",
+    "supertest": "^7.2.2",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

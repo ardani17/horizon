@@ -1,0 +1,188 @@
+/* ============================================
+   Admin API Keys Page — Styles
+   ============================================ */
+
+/* Create form */
+.createForm {
+  background-color: var(--color-white);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.createFormTitle {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+  text-transform: uppercase;
+  color: var(--color-slate);
+  border-bottom: var(--border-width) solid var(--color-emerald);
+  padding-bottom: var(--space-2);
+}
+
+.formRow {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 200px;
+}
+
+.formGroup label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-slate);
+}
+
+.formGroup input {
+  font-size: var(--text-sm);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+/* Raw key display */
+.rawKeyBox {
+  background-color: #fef3c7;
+  border: var(--border-width) solid var(--color-warning);
+  border-radius: var(--border-radius);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.rawKeyWarning {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-warning);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+}
+
+.rawKeyValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-2) var(--space-3);
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.rawKeyText {
+  flex: 1;
+  word-break: break-all;
+}
+
+.copyBtn {
+  padding: var(--space-1) var(--space-2);
+  min-height: 32px;
+  min-width: 32px;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.rawKeyNote {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  margin-top: var(--space-2);
+}
+
+/* Table cells */
+.keyPrefix {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-slate);
+}
+
+.appName {
+  font-weight: 600;
+  color: var(--color-slate);
+}
+
+.origins {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: nowrap;
+}
+
+.actionBtn {
+  padding: var(--space-1) var(--space-2);
+  min-height: 32px;
+  min-width: 32px;
+  font-size: var(--text-sm);
+}
+
+.actionBtnDanger {
+  border-color: var(--color-danger);
+}
+
+.actionBtnDanger:hover {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}
+
+/* Status badge */
+.badgeActive {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: var(--border-radius);
+  border: 1px solid;
+  color: var(--color-emerald-dark);
+  background-color: var(--color-emerald-muted);
+  border-color: var(--color-emerald);
+}
+
+.badgeRevoked {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: var(--border-radius);
+  border: 1px solid;
+  color: var(--color-slate-lighter);
+  background-color: var(--color-cream);
+  border-color: var(--color-border);
+}
+
+@media (max-width: 768px) {
+  .createForm {
+    padding: var(--space-4);
+  }
+
+  .formRow {
+    flex-direction: column;
+  }
+
+  .formGroup {
+    min-width: 100%;
+  }
+}

@@ -1,0 +1,55 @@
+/* ============================================
+   LikeButton — Retro Blogger Style
+   ============================================ */
+
+.likeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-slate-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.likeButton:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.likeButton:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
+}
+
+.likeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.liked {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.heart {
+  font-size: var(--text-lg);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.likeButton:active .heart {
+  transform: scale(1.2);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+}

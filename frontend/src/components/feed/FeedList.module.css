@@ -1,0 +1,21 @@
+.feedList {
+  flex: 1;
+  min-width: 0;
+}
+
+.articles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-12) var(--space-4);
+}
+
+.emptyText {
+  font-size: var(--text-base);
+  color: var(--color-slate-muted);
+  margin: 0;
+}

@@ -1,0 +1,302 @@
+/* ============================================
+   UserProfile Component — Styles
+   ============================================ */
+
+/* Profile card */
+.profileCard {
+  background-color: var(--color-white);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.profileHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.profileName {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-slate);
+  text-transform: none;
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profileMeta {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--color-slate-muted);
+}
+
+.profileMetaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.roleActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.roleSelect {
+  font-size: var(--text-sm);
+  min-width: 120px;
+}
+
+/* Stats grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.statCard {
+  background-color: var(--color-cream);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-emerald-dark);
+  display: block;
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-1);
+  display: block;
+}
+
+/* Section headers */
+.sectionTitle {
+  font-size: var(--text-lg);
+  color: var(--color-emerald-dark);
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-emerald);
+}
+
+/* Category breakdown */
+.categoryBreakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.categoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background-color: var(--color-cream);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius);
+}
+
+.categoryCount {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-slate);
+}
+
+.categoryLabel {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  text-transform: uppercase;
+}
+
+/* Sections grid */
+.sectionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.section {
+  background-color: var(--color-white);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-4);
+  overflow: hidden;
+}
+
+.sectionScrollable {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Article list */
+.articleList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.articleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.articleItem:last-child {
+  border-bottom: none;
+}
+
+.articleItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.articleItemTitle {
+  font-weight: 600;
+  color: var(--color-slate);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.articleItemTitle:hover {
+  color: var(--color-emerald);
+  text-decoration: underline;
+}
+
+.articleItemMeta {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* Transaction history */
+.transactionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.transactionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.transactionItem:last-child {
+  border-bottom: none;
+}
+
+.transactionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.transactionType {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-transform: capitalize;
+}
+
+.transactionEarned {
+  color: var(--color-emerald-dark);
+}
+
+.transactionSpent {
+  color: var(--color-danger);
+}
+
+.transactionAdjusted {
+  color: var(--color-warning);
+}
+
+.transactionDesc {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transactionAmount {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.transactionAmountPositive {
+  color: var(--color-emerald-dark);
+}
+
+.transactionAmountNegative {
+  color: var(--color-danger);
+}
+
+.transactionDate {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  white-space: nowrap;
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-slate-muted);
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .profileHeader {
+    flex-direction: column;
+  }
+
+  .sectionsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .profileCard {
+    padding: var(--space-4);
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

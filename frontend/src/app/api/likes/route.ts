@@ -1,0 +1,94 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { query, queryOne } from '@shared/db';
+
+interface LikeRow {
+  id: string;
+}
+
+interface CountRow {
+  count: string;
+}
+
+/**
+ * POST /api/likes — Toggle like for an article.
+ *
+ * Body: { article_id: string, fingerprint: string }
+ *
+ * Uses the UNIQUE(article_id, fingerprint) constraint to enforce
+ * one like per fingerprint per article. If the like already exists,
+ * it is removed (unlike). Otherwise a new like is inserted.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { article_id, fingerprint } = body;
+
+    if (!article_id || !fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            error_code: 'VALIDATION_ERROR',
+            message: 'article_id dan fingerprint diperlukan',
+            details: null,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 422 }
+      );
+    }
+
+    // Check if like already exists
+    const existing = await queryOne<LikeRow>(
+      `SELECT id FROM likes WHERE article_id = $1 AND fingerprint = $2`,
+      [article_id, fingerprint]
+    );
+
+    let liked: boolean;
+
+    if (existing) {
+      // Unlike — remove the existing like
+      await query(
+        `DELETE FROM likes WHERE article_id = $1 AND fingerprint = $2`,
+        [article_id, fingerprint]
+      );
+      liked = false;
+    } else {
+      // Like — insert new like
+      await query(
+        `INSERT INTO likes (article_id, fingerprint) VALUES ($1, $2)`,
+        [article_id, fingerprint]
+      );
+      liked = true;
+    }
+
+    // Get updated like count
+    const countResult = await queryOne<CountRow>(
+      `SELECT COUNT(*)::text AS count FROM likes WHERE article_id = $1`,
+      [article_id]
+    );
+
+    const likeCount = parseInt(countResult?.count || '0', 10);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        liked,
+        like_count: likeCount,
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          error_code: 'INTERNAL_ERROR',
+          message: 'Gagal memproses like',
+          details: null,
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { status: 500 }
+    );
+  }
+}

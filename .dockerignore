@@ -1,0 +1,16 @@
+node_modules
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.vscode
+.kiro
+*.md
+!README.md
+frontend/.next
+frontend/node_modules
+bot/dist
+bot/node_modules
+certbot
+nginx

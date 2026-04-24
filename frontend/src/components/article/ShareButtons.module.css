@@ -1,0 +1,87 @@
+.shareButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-slate-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: var(--space-1);
+}
+
+.shareBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  background-color: var(--color-white);
+  color: var(--color-slate);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.shareBtn:hover {
+  border-color: var(--color-slate-muted);
+  background-color: var(--color-cream);
+}
+
+.shareBtn:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
+}
+
+/* Platform-specific hover colors */
+.x:hover {
+  background-color: #0f1419;
+  border-color: #0f1419;
+  color: var(--color-white);
+}
+
+.facebook:hover {
+  background-color: #1877f2;
+  border-color: #1877f2;
+  color: var(--color-white);
+}
+
+.threads:hover {
+  background-color: #000000;
+  border-color: #000000;
+  color: var(--color-white);
+}
+
+.instagram:hover {
+  background-color: #e4405f;
+  border-color: #e4405f;
+  color: var(--color-white);
+}
+
+.copyLink:hover {
+  background-color: var(--color-emerald);
+  border-color: var(--color-emerald-dark);
+  color: var(--color-white);
+}
+
+@media (max-width: 768px) {
+  .shareButtons {
+    gap: var(--space-2);
+  }
+
+  .label {
+    width: 100%;
+    margin-bottom: var(--space-1);
+  }
+}

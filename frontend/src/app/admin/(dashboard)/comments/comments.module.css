@@ -1,0 +1,82 @@
+/* ============================================
+   Admin Comments Moderation Page — Styles
+   ============================================ */
+
+.commentContent {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--color-slate);
+}
+
+.articleRef {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 220px;
+}
+
+.articleLink {
+  font-weight: 600;
+  color: var(--color-slate);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+
+.articleLink:hover {
+  color: var(--color-emerald);
+  text-decoration: underline;
+}
+
+.articleSlug {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authorCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.authorName {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-slate);
+}
+
+.authorTag {
+  font-size: var(--text-xs);
+  color: var(--color-slate-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: nowrap;
+}
+
+.actionBtn {
+  padding: var(--space-1) var(--space-2);
+  min-height: 32px;
+  min-width: 32px;
+  font-size: var(--text-sm);
+}
+
+.actionBtnDanger {
+  border-color: var(--color-danger);
+}
+
+.actionBtnDanger:hover {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}

@@ -1,0 +1,99 @@
+.item {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-border);
+  aspect-ratio: 1 / 1;
+  transition: border-color 0.15s ease;
+}
+
+.item:hover {
+  border-color: var(--color-emerald);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.media {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.playIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  padding: var(--space-2);
+  z-index: 3;
+}
+
+.item:hover .overlay,
+.item:focus-visible .overlay {
+  opacity: 1;
+}
+
+.overlayTitle {
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
+.overlayType {
+  color: var(--color-emerald-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+  .overlayTitle {
+    font-size: var(--text-xs);
+  }
+
+  .overlayType {
+    font-size: 0.625rem;
+  }
+
+  .playIcon svg {
+    width: 28px;
+    height: 28px;
+  }
+}

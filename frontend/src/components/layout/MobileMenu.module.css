@@ -1,0 +1,187 @@
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--border-radius);
+  transition: background-color 0.15s ease;
+}
+
+.hamburger:hover {
+  background-color: var(--color-emerald-dark);
+}
+
+.hamburger:focus-visible {
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+}
+
+.hamburgerLine {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background-color: var(--color-white);
+  border-radius: 1px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.hamburgerLineOpen1 {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburgerLineOpen2 {
+  opacity: 0;
+}
+
+.hamburgerLineOpen3 {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Overlay container */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+/* Dark backdrop */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Slide-in panel */
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 280px;
+  max-width: 85vw;
+  height: 100%;
+  background-color: var(--color-white);
+  border-left: var(--border-width) solid var(--color-border);
+  overflow-y: auto;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  background-color: var(--color-emerald);
+}
+
+.panelLogo {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  color: var(--color-white);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background-color 0.15s ease;
+}
+
+.closeButton:hover {
+  background-color: var(--color-emerald-dark);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+}
+
+.panelSection {
+  padding: var(--space-4);
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.panelSectionTitle {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-emerald-dark);
+  margin-bottom: var(--space-3);
+  font-weight: 700;
+}
+
+.panelList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.panelLink {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+  color: var(--color-slate);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  transition: background-color 0.15s ease;
+}
+
+.panelLink:hover {
+  background-color: var(--color-emerald-muted);
+  color: var(--color-emerald-dark);
+}
+
+.panelLink:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
+}
+
+.panelText {
+  font-size: var(--text-sm);
+  color: var(--color-slate-lighter);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+}
