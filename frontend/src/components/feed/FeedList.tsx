@@ -41,7 +41,7 @@ export function FeedList({ articles }: FeedListProps) {
       <CategoryTabs initialCategory={category} onCategoryChange={handleCategoryChange} />
 
       {paged.length === 0 ? (
-        <div className={`retro-box ${styles.empty}`}>
+        <div className={styles.empty}>
           <p className={styles.emptyText}>Belum ada artikel untuk kategori ini.</p>
         </div>
       ) : (

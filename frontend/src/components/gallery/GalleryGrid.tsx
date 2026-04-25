@@ -85,7 +85,7 @@ export function GalleryGrid({ initialItems, totalCount }: GalleryGridProps) {
 
   if (items.length === 0) {
     return (
-      <div className={`retro-box ${styles.empty}`}>
+      <div className={styles.empty}>
         <p className={styles.emptyText}>Belum ada media di gallery.</p>
       </div>
     );

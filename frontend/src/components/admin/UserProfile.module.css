@@ -4,7 +4,7 @@
 
 /* Profile card */
 .profileCard {
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-6);
@@ -29,7 +29,7 @@
 .profileName {
   font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--color-slate);
+  color: var(--color-text);
   text-transform: none;
   border-bottom: none;
   margin-bottom: 0;
@@ -41,7 +41,7 @@
   gap: var(--space-4);
   flex-wrap: wrap;
   font-size: var(--text-sm);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .profileMetaItem {
@@ -70,8 +70,8 @@
 }
 
 .statCard {
-  background-color: var(--color-cream);
-  border: 1px solid var(--color-border-light);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-4);
   text-align: center;
@@ -80,13 +80,13 @@
 .statValue {
   font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--color-emerald-dark);
+  color: var(--color-accent);
   display: block;
 }
 
 .statLabel {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: var(--space-1);
@@ -96,11 +96,11 @@
 /* Section headers */
 .sectionTitle {
   font-size: var(--text-lg);
-  color: var(--color-emerald-dark);
-  text-transform: uppercase;
+  color: var(--color-text);
+  text-transform: none;
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-2);
-  border-bottom: var(--border-width) solid var(--color-emerald);
+  border-bottom: var(--border-width) solid var(--color-border);
 }
 
 /* Category breakdown */
@@ -116,20 +116,20 @@
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-3);
-  background-color: var(--color-cream);
-  border: 1px solid var(--color-border-light);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
 }
 
 .categoryCount {
   font-size: var(--text-xl);
   font-weight: 700;
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .categoryLabel {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   text-transform: uppercase;
 }
 
@@ -141,7 +141,7 @@
 }
 
 .section {
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-4);
@@ -166,7 +166,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .articleItem:last-child {
@@ -183,7 +183,7 @@
 
 .articleItemTitle {
   font-weight: 600;
-  color: var(--color-slate);
+  color: var(--color-text);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -191,13 +191,13 @@
 }
 
 .articleItemTitle:hover {
-  color: var(--color-emerald);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .articleItemMeta {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   display: flex;
   gap: var(--space-3);
 }
@@ -215,7 +215,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .transactionItem:last-child {
@@ -237,7 +237,7 @@
 }
 
 .transactionEarned {
-  color: var(--color-emerald-dark);
+  color: var(--color-accent);
 }
 
 .transactionSpent {
@@ -250,7 +250,7 @@
 
 .transactionDesc {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -263,7 +263,7 @@
 }
 
 .transactionAmountPositive {
-  color: var(--color-emerald-dark);
+  color: var(--color-accent);
 }
 
 .transactionAmountNegative {
@@ -272,14 +272,14 @@
 
 .transactionDate {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .emptyState {
   text-align: center;
   padding: var(--space-8);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 

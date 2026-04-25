@@ -23,9 +23,9 @@
   top: calc(-1 * var(--space-10));
   right: 0;
   z-index: 1001;
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--color-white);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   width: 44px;
   height: 44px;
@@ -34,15 +34,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .closeButton:hover {
-  background: rgba(255, 255, 255, 0.3);
+  color: var(--color-accent);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .closeButton:focus-visible {
-  outline: 2px solid var(--color-emerald);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
@@ -73,10 +74,13 @@
 .caption {
   margin-top: var(--space-3);
   text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--border-radius);
 }
 
 .captionTitle {
-  color: var(--color-white);
+  color: var(--color-text);
   font-size: var(--text-base);
   font-weight: 600;
 }

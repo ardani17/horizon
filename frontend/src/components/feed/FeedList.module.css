@@ -1,6 +1,7 @@
 .feedList {
   flex: 1;
   min-width: 0;
+  background-color: var(--color-bg);
 }
 
 .articles {
@@ -12,10 +13,13 @@
 .empty {
   text-align: center;
   padding: var(--space-12) var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
 }
 
 .emptyText {
   font-size: var(--text-base);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   margin: 0;
 }

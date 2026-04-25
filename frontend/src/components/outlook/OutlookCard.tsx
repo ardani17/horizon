@@ -29,7 +29,7 @@ export function OutlookCard({ article }: OutlookCardProps) {
   const readTime = estimateReadTime(article.content_html);
 
   return (
-    <article className={`retro-box ${styles.card}`}>
+    <article className={styles.card}>
       <div className={styles.thumbnail}>
         {article.cover_image ? (
           /* eslint-disable-next-line @next/next/no-img-element */

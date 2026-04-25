@@ -17,9 +17,9 @@
 .bone {
   background: linear-gradient(
     90deg,
-    var(--color-cream) 25%,
-    var(--color-border-light) 50%,
-    var(--color-cream) 75%
+    var(--color-surface) 25%,
+    var(--color-border) 50%,
+    var(--color-surface) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
@@ -39,7 +39,7 @@
 }
 
 .card {
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-4);
@@ -82,7 +82,7 @@
 
 /* Article skeleton */
 .articleBox {
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-6);

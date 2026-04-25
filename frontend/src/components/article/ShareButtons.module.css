@@ -8,8 +8,7 @@
 .label {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-slate-muted);
-  text-transform: uppercase;
+  color: var(--color-text-muted);
   letter-spacing: 0.03em;
   margin-right: var(--space-1);
 }
@@ -26,8 +25,8 @@
   font-weight: 700;
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
-  background-color: var(--color-white);
-  color: var(--color-slate);
+  background-color: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   padding: 0;
@@ -35,12 +34,11 @@
 }
 
 .shareBtn:hover {
-  border-color: var(--color-slate-muted);
-  background-color: var(--color-cream);
+  border-color: var(--color-text-muted);
 }
 
 .shareBtn:focus-visible {
-  outline: 2px solid var(--color-emerald);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
@@ -48,31 +46,31 @@
 .x:hover {
   background-color: #0f1419;
   border-color: #0f1419;
-  color: var(--color-white);
+  color: #ffffff;
 }
 
 .facebook:hover {
   background-color: #1877f2;
   border-color: #1877f2;
-  color: var(--color-white);
+  color: #ffffff;
 }
 
 .threads:hover {
   background-color: #000000;
   border-color: #000000;
-  color: var(--color-white);
+  color: #ffffff;
 }
 
 .instagram:hover {
   background-color: #e4405f;
   border-color: #e4405f;
-  color: var(--color-white);
+  color: #ffffff;
 }
 
 .copyLink:hover {
-  background-color: var(--color-emerald);
-  border-color: var(--color-emerald-dark);
-  color: var(--color-white);
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
 }
 
 @media (max-width: 768px) {

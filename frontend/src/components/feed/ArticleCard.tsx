@@ -44,7 +44,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
   const displayTitle = article.title || excerpt.slice(0, 60);
 
   return (
-    <article className={`retro-box ${styles.card}`}>
+    <article className={styles.card}>
       <div className={styles.meta}>
         <span className={styles.category}>
           {categoryLabels[article.category] || article.category}

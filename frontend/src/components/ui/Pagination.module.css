@@ -5,7 +5,7 @@
   gap: var(--space-2);
   margin-top: var(--space-8);
   padding-top: var(--space-4);
-  border-top: var(--border-width) dashed var(--color-border);
+  border-top: var(--border-width) solid var(--color-border);
 }
 
 .pageButton {
@@ -18,8 +18,8 @@
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-slate);
-  background-color: var(--color-white);
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -27,14 +27,15 @@
 }
 
 .pageButton:hover:not(:disabled) {
-  background-color: var(--color-emerald-muted);
-  border-color: var(--color-emerald);
-  color: var(--color-emerald-dark);
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
 }
 
 .pageButton:focus-visible {
-  outline: 2px solid var(--color-emerald);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+  box-shadow: var(--shadow-glow);
 }
 
 .pageButton:disabled {
@@ -43,19 +44,19 @@
 }
 
 .pageButtonActive {
-  background-color: var(--color-emerald);
-  color: var(--color-white);
-  border-color: var(--color-emerald-dark);
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
 }
 
 .pageButtonActive:hover {
-  background-color: var(--color-emerald-dark);
-  color: var(--color-white);
+  background-color: #059669;
+  color: #ffffff;
 }
 
 .info {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   margin-top: var(--space-2);
   text-align: center;
 }

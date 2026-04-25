@@ -8,7 +8,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: var(--text-sm);
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .articleRef {
@@ -20,7 +20,7 @@
 
 .articleLink {
   font-weight: 600;
-  color: var(--color-slate);
+  color: var(--color-text);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -29,13 +29,13 @@
 }
 
 .articleLink:hover {
-  color: var(--color-emerald);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .articleSlug {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   font-family: var(--font-mono);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -51,12 +51,12 @@
 .authorName {
   font-weight: 600;
   font-size: var(--text-sm);
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .authorTag {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .actions {
@@ -78,5 +78,5 @@
 
 .actionBtnDanger:hover {
   background-color: var(--color-danger);
-  color: var(--color-white);
+  color: #ffffff;
 }

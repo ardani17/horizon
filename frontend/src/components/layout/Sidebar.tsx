@@ -13,7 +13,7 @@ export function Sidebar() {
   return (
     <aside className={styles.sidebar} aria-label="Sidebar navigasi">
       {/* Kategori */}
-      <div className={`retro-box-accent ${styles.section}`}>
+      <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Kategori</h3>
         <ul className={styles.categoryList} role="list">
           {categories.map((cat) => (
@@ -27,7 +27,7 @@ export function Sidebar() {
       </div>
 
       {/* Info Komunitas */}
-      <div className={`retro-box ${styles.section}`}>
+      <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Komunitas</h3>
         <p className={styles.communityText}>
           Horizon adalah komunitas trader yang berbagi jurnal trading, cerita kehidupan, dan analisa market.
@@ -49,7 +49,7 @@ export function Sidebar() {
       </div>
 
       {/* Links */}
-      <div className={`retro-box ${styles.section}`}>
+      <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Links</h3>
         <ul className={styles.linkList} role="list">
           <li>

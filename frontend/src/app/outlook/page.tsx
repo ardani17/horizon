@@ -74,7 +74,7 @@ export default async function OutlookPage() {
               ))}
             </div>
           ) : (
-            <div className={`retro-box ${styles.empty}`}>
+            <div className={styles.empty}>
               <div className={styles.emptyIcon}>📊</div>
               <p className={styles.emptyText}>Belum ada artikel Outlook</p>
               <p className={styles.emptySubtext}>

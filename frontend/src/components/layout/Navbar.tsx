@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import styles from './Navbar.module.css';
 import { MobileMenu } from './MobileMenu';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 const navItems = [
   { label: 'Feed', href: '/' },
@@ -26,7 +27,10 @@ export function Navbar() {
           ))}
         </ul>
 
-        <MobileMenu navItems={navItems.map((i) => ({ label: i.label, href: i.href }))} />
+        <div className={styles.navActions}>
+          <ThemeToggle />
+          <MobileMenu navItems={navItems.map((i) => ({ label: i.label, href: i.href }))} />
+        </div>
       </nav>
     </header>
   );

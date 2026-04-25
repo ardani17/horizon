@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './MobileMenu.module.css';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 interface NavItem {
   label: string;
@@ -85,14 +86,17 @@ export function MobileMenu({ navItems }: MobileMenuProps) {
           <nav className={styles.panel} aria-label="Menu mobile">
             <div className={styles.panelHeader}>
               <span className={styles.panelLogo}>Horizon</span>
-              <button
-                className={styles.closeButton}
-                onClick={close}
-                aria-label="Tutup menu"
-                type="button"
-              >
-                ✕
-              </button>
+              <div className={styles.panelHeaderActions}>
+                <ThemeToggle />
+                <button
+                  className={styles.closeButton}
+                  onClick={close}
+                  aria-label="Tutup menu"
+                  type="button"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Main nav links */}

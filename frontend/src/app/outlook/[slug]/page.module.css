@@ -17,7 +17,7 @@
 }
 
 .article {
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-8);
@@ -29,7 +29,7 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-emerald);
+  color: var(--color-accent);
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -38,7 +38,8 @@
 }
 
 .backLink:hover {
-  color: var(--color-emerald-dark);
+  color: var(--color-accent);
+  opacity: 0.85;
   text-decoration: underline;
 }
 
@@ -50,7 +51,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--color-slate);
+  color: var(--color-text);
   display: block;
 }
 
@@ -96,10 +97,10 @@
   align-items: center;
   gap: var(--space-4);
   padding-top: var(--space-4);
-  border-top: var(--border-width) dashed var(--color-border);
+  border-top: var(--border-width) solid var(--color-border);
   margin-top: var(--space-8);
   font-size: var(--text-sm);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .statItem {

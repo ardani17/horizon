@@ -4,7 +4,7 @@
 
 .container {
   padding: var(--space-4);
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   margin-bottom: var(--space-6);
@@ -13,12 +13,12 @@
 .title {
   font-size: var(--text-lg);
   font-weight: 700;
-  color: var(--color-slate);
+  color: var(--color-text);
   margin: 0 0 var(--space-3) 0;
 }
 
 .loading {
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
 
@@ -34,17 +34,18 @@
 .retryBtn {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
-  background-color: var(--color-emerald);
-  color: var(--color-white);
+  background-color: var(--color-accent);
+  color: #ffffff;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
   min-height: 44px;
   min-width: 44px;
+  transition: background-color 0.15s ease;
 }
 
 .retryBtn:hover {
-  opacity: 0.9;
+  background-color: #059669;
 }
 
 /* Status row */
@@ -71,8 +72,8 @@
 }
 
 .statusDot[data-status='online'] {
-  background-color: var(--color-emerald);
-  box-shadow: 0 0 4px var(--color-emerald);
+  background-color: var(--color-accent);
+  box-shadow: 0 0 4px var(--color-accent);
 }
 
 .statusDot[data-status='offline'] {
@@ -82,12 +83,12 @@
 .statusLabel {
   font-weight: 600;
   font-size: var(--text-sm);
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .statusMeta {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -95,7 +96,7 @@
 .statusValue {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 /* Command stats */
@@ -113,12 +114,12 @@
 .statsLabel {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .statsTotal {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   font-family: var(--font-mono);
 }
 
@@ -133,7 +134,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-1) var(--space-2);
-  background-color: var(--color-offwhite);
+  background-color: var(--color-bg);
   border-radius: var(--border-radius);
   font-size: var(--text-sm);
 }
@@ -141,18 +142,18 @@
 .cmdName {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--color-emerald);
+  color: var(--color-accent);
 }
 
 .cmdCount {
   font-weight: 600;
   font-family: var(--font-mono);
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .emptyStats {
   font-size: var(--text-sm);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
@@ -166,7 +167,7 @@
   display: block;
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-slate);
+  color: var(--color-text);
   margin-bottom: var(--space-2);
 }
 
@@ -182,29 +183,33 @@
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   min-height: 44px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 .notifyInput:focus {
-  outline: 2px solid var(--color-emerald);
-  outline-offset: -2px;
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .notifyBtn {
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
   font-weight: 600;
-  background-color: var(--color-emerald);
-  color: var(--color-white);
+  background-color: var(--color-accent);
+  color: #ffffff;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
   white-space: nowrap;
   min-height: 44px;
   min-width: 44px;
+  transition: background-color 0.15s ease;
 }
 
 .notifyBtn:hover:not(:disabled) {
-  opacity: 0.9;
+  background-color: #059669;
 }
 
 .notifyBtn:disabled {
@@ -214,7 +219,7 @@
 
 .notifySuccess {
   font-size: var(--text-sm);
-  color: var(--color-emerald);
+  color: var(--color-accent);
   margin-top: var(--space-2);
 }
 

@@ -11,15 +11,17 @@
   padding: var(--space-2) var(--space-4);
   min-height: 44px;
   min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--color-slate-lighter);
-  background: none;
+  color: var(--color-text-muted);
+  background: transparent;
   border: var(--border-width) solid transparent;
-  border-bottom: none;
+  border-bottom: 2px solid transparent;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
@@ -27,21 +29,22 @@
 }
 
 .tab:hover {
-  color: var(--color-emerald-dark);
-  background-color: var(--color-emerald-muted);
+  color: var(--color-text);
 }
 
 .tab:focus-visible {
-  outline: 2px solid var(--color-emerald);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
 .tabActive {
-  color: var(--color-emerald);
-  border-color: var(--color-emerald);
-  background-color: var(--color-white);
-  border-bottom: var(--border-width) solid var(--color-white);
-  margin-bottom: calc(-1 * var(--border-width));
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+  background-color: transparent;
+}
+
+.tabActive:hover {
+  color: var(--color-accent);
 }
 
 @media (max-width: 768px) {
@@ -52,5 +55,7 @@
   .tab {
     padding: var(--space-2) var(--space-3);
     font-size: var(--text-xs);
+    min-height: 44px;
+    min-width: 44px;
   }
 }

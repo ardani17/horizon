@@ -3,13 +3,16 @@
 import { useState, useCallback, useEffect, createContext, useContext } from 'react';
 import styles from './Toast.module.css';
 
+type ToastType = 'success' | 'error' | 'warning';
+
 interface ToastState {
   message: string;
+  type: ToastType;
   id: number;
 }
 
 interface ToastContextValue {
-  showToast: (message: string) => void;
+  showToast: (message: string, type?: ToastType) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -27,8 +30,8 @@ export function useToast(): ToastContextValue {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<ToastState | null>(null);
 
-  const showToast = useCallback((message: string) => {
-    setToast({ message, id: Date.now() });
+  const showToast = useCallback((message: string, type: ToastType = 'success') => {
+    setToast({ message, type, id: Date.now() });
   }, []);
 
   useEffect(() => {
@@ -42,7 +45,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       {toast && (
         <div className={styles.toastContainer} role="status" aria-live="polite">
-          <div className={styles.toast}>{toast.message}</div>
+          <div className={`${styles.toast} ${styles[toast.type]}`}>{toast.message}</div>
         </div>
       )}
     </ToastContext.Provider>

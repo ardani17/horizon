@@ -34,7 +34,7 @@ export function ArticleLongCard({ article }: ArticleLongCardProps) {
   const displayTitle = article.title || excerpt.slice(0, 80);
 
   return (
-    <article className={`retro-box-accent ${styles.card}`}>
+    <article className={styles.card}>
       <div className={styles.meta}>
         <div className={styles.badges}>
           <span className={styles.category}>

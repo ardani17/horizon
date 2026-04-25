@@ -132,7 +132,7 @@ export default function AdminUserDetailPage() {
             ← Kembali ke Daftar Pengguna
           </Link>
         </div>
-        <div className="retro-box">
+        <div>
           <p>{error || 'Pengguna tidak ditemukan.'}</p>
           <button className="btn btn-secondary" onClick={() => router.push('/admin/users')}>
             Kembali

@@ -2,12 +2,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--space-4);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card:hover {
-  border-color: var(--color-emerald);
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .meta {
@@ -31,10 +35,10 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-emerald-dark);
-  background-color: var(--color-emerald-muted);
-  border: 1px solid var(--color-emerald);
-  border-radius: var(--border-radius);
+  color: var(--color-accent);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: none;
+  border-radius: 6px;
 }
 
 .longBadge {
@@ -44,15 +48,15 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-slate);
-  background-color: var(--color-cream);
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
+  border-radius: 6px;
 }
 
 .date {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .title {
@@ -63,7 +67,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .titleLink {
@@ -72,13 +76,13 @@
 }
 
 .titleLink:hover {
-  color: var(--color-emerald);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .excerpt {
   font-size: var(--text-base);
-  color: var(--color-slate-lighter);
+  color: var(--color-text-muted);
   line-height: 1.7;
   margin: 0;
 }
@@ -89,7 +93,7 @@
   gap: var(--space-1);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-emerald);
+  color: var(--color-accent);
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -97,8 +101,9 @@
 }
 
 .readMore:hover {
-  color: var(--color-emerald-dark);
+  color: var(--color-accent);
   text-decoration: underline;
+  opacity: 0.8;
 }
 
 .footer {
@@ -106,16 +111,16 @@
   align-items: center;
   justify-content: space-between;
   padding-top: var(--space-3);
-  border-top: var(--border-width) dashed var(--color-border);
+  border-top: 1px solid var(--color-border);
 }
 
 .author {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .author strong {
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 @media (max-width: 768px) {

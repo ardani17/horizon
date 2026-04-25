@@ -2,12 +2,16 @@
   display: flex;
   flex-direction: row;
   gap: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--space-4);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card:hover {
-  border-color: var(--color-emerald);
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .thumbnail {
@@ -15,9 +19,9 @@
   width: 160px;
   height: 120px;
   overflow: hidden;
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius);
-  background-color: var(--color-cream);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-bg);
 }
 
 .thumbnailImage {
@@ -33,8 +37,8 @@
   align-items: center;
   justify-content: center;
   font-size: var(--text-3xl);
-  color: var(--color-slate-muted);
-  background-color: var(--color-cream);
+  color: var(--color-text-muted);
+  background-color: var(--color-bg);
 }
 
 .body {
@@ -59,15 +63,15 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-white);
-  background-color: var(--color-emerald);
-  border: 1px solid var(--color-emerald-dark);
-  border-radius: var(--border-radius);
+  color: var(--color-accent);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: none;
+  border-radius: 6px;
 }
 
 .date {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .title {
@@ -78,7 +82,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .titleLink {
@@ -87,13 +91,13 @@
 }
 
 .titleLink:hover {
-  color: var(--color-emerald);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .excerpt {
   font-size: var(--text-sm);
-  color: var(--color-slate-lighter);
+  color: var(--color-text-muted);
   line-height: 1.6;
   margin: 0;
 }
@@ -108,16 +112,16 @@
 
 .author {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .author strong {
-  color: var(--color-slate);
+  color: var(--color-text);
 }
 
 .readTime {
   font-size: var(--text-xs);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {

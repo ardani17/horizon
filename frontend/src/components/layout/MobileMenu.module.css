@@ -1,3 +1,4 @@
+/* Hamburger button */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -17,19 +18,20 @@
 }
 
 .hamburger:hover {
-  background-color: var(--color-emerald-dark);
+  background-color: var(--color-surface);
 }
 
 .hamburger:focus-visible {
-  outline: 2px solid var(--color-white);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
+/* Req 7.6: Hamburger icon lines in primary text color */
 .hamburgerLine {
   display: block;
   width: 22px;
   height: 2px;
-  background-color: var(--color-white);
+  background-color: var(--color-text);
   border-radius: 1px;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
@@ -53,14 +55,14 @@
   z-index: 200;
 }
 
-/* Dark backdrop */
+/* Req 7.2: Semi-transparent black backdrop */
 .backdrop {
   position: absolute;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
-/* Slide-in panel */
+/* Req 7.1: Panel uses Surface_Color background */
 .panel {
   position: absolute;
   top: 0;
@@ -68,7 +70,7 @@
   width: 280px;
   max-width: 85vw;
   height: 100%;
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border-left: var(--border-width) solid var(--color-border);
   overflow-y: auto;
   animation: slideIn 0.2s ease-out;
@@ -89,15 +91,20 @@
   justify-content: space-between;
   padding: var(--space-4);
   border-bottom: var(--border-width) solid var(--color-border);
-  background-color: var(--color-emerald);
 }
 
+.panelHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Req 7.3: Logo in Emerald_Accent color */
 .panelLogo {
   font-family: var(--font-heading);
   font-size: var(--text-lg);
   font-weight: 700;
-  color: var(--color-white);
-  text-transform: uppercase;
+  color: var(--color-accent);
   letter-spacing: 0.05em;
 }
 
@@ -111,32 +118,33 @@
   min-height: 44px;
   background: none;
   border: none;
-  color: var(--color-white);
+  color: var(--color-text);
   font-size: var(--text-lg);
   cursor: pointer;
   border-radius: var(--border-radius);
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .closeButton:hover {
-  background-color: var(--color-emerald-dark);
+  background-color: var(--color-bg);
+  color: var(--color-accent);
 }
 
 .closeButton:focus-visible {
-  outline: 2px solid var(--color-white);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
 .panelSection {
   padding: var(--space-4);
-  border-bottom: 1px dashed var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
+/* Req 7.4: Section titles in primary text color */
 .panelSectionTitle {
   font-size: var(--text-xs);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-emerald-dark);
+  color: var(--color-text);
   margin-bottom: var(--space-3);
   font-weight: 700;
 }
@@ -150,32 +158,34 @@
   gap: var(--space-1);
 }
 
+/* Req 7.4: Nav links in muted text color */
 .panelLink {
   display: flex;
   align-items: center;
   padding: var(--space-2) var(--space-3);
   min-height: 44px;
-  color: var(--color-slate);
+  color: var(--color-text-muted);
   text-decoration: none;
   font-size: var(--text-sm);
   font-weight: 500;
   border-radius: var(--border-radius);
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+/* Req 7.5: Hover/focus transitions to Emerald_Accent */
 .panelLink:hover {
-  background-color: var(--color-emerald-muted);
-  color: var(--color-emerald-dark);
+  background-color: var(--color-bg);
+  color: var(--color-accent);
 }
 
 .panelLink:focus-visible {
-  outline: 2px solid var(--color-emerald);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
 .panelText {
   font-size: var(--text-sm);
-  color: var(--color-slate-lighter);
+  color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
 }

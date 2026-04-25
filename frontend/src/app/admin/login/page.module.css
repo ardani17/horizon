@@ -1,5 +1,5 @@
 /* ============================================
-   Admin Login Page — Retro Blogger Theme
+   Admin Login Page — Modern Theme-Aware
    ============================================ */
 
 .loginPage {
@@ -7,17 +7,18 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: var(--color-offwhite);
+  background-color: var(--color-bg);
   padding: var(--space-4);
 }
 
 .loginCard {
   width: 100%;
   max-width: 400px;
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-8);
+  box-shadow: var(--shadow-md);
 }
 
 .loginHeader {
@@ -28,20 +29,14 @@
 .loginTitle {
   font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--color-slate);
-  text-transform: uppercase;
+  color: var(--color-text);
   letter-spacing: -0.01em;
-  padding: var(--space-2) var(--space-4);
-  background-color: var(--color-emerald);
-  color: var(--color-white);
-  border: var(--border-width) solid var(--color-emerald-dark);
-  display: inline-block;
   margin-bottom: var(--space-2);
 }
 
 .loginSubtitle {
   font-size: var(--text-sm);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
   margin-top: var(--space-2);
 }
 
@@ -60,27 +55,26 @@
 .label {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-slate);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  color: var(--color-text);
+  letter-spacing: 0.01em;
 }
 
 .input {
   width: 100%;
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-base);
-  color: var(--color-slate);
-  background-color: var(--color-white);
+  color: var(--color-text);
+  background-color: var(--color-bg);
   border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius);
+  border-radius: 6px;
   min-height: 44px;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-emerald);
-  box-shadow: 0 0 0 1px var(--color-emerald);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .submitButton {
@@ -88,24 +82,23 @@
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-base);
   font-weight: 600;
-  color: var(--color-white);
-  background-color: var(--color-emerald);
-  border: var(--border-width) solid var(--color-emerald-dark);
-  border-radius: var(--border-radius);
+  color: #ffffff;
+  background-color: var(--color-accent);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: 8px;
   cursor: pointer;
   min-height: 44px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .submitButton:hover {
-  background-color: var(--color-emerald-dark);
+  background-color: #059669;
 }
 
 .submitButton:focus-visible {
-  outline: 2px solid var(--color-emerald);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+  box-shadow: var(--shadow-glow);
 }
 
 .submitButton:disabled {
@@ -115,8 +108,9 @@
 
 .errorMessage {
   padding: var(--space-2) var(--space-3);
-  background-color: #fef2f2;
+  background-color: var(--color-surface);
   border: 1px solid var(--color-danger);
+  border-left: 3px solid var(--color-danger);
   border-radius: var(--border-radius);
   color: var(--color-danger);
   font-size: var(--text-sm);

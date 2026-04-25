@@ -46,9 +46,9 @@ interface StatsData {
 type TimeRange = 'day' | 'week' | 'month';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  trading: 'var(--color-emerald)',
+  trading: 'var(--color-accent)',
   life_story: 'var(--color-info)',
-  general: 'var(--color-slate-muted)',
+  general: 'var(--color-text-muted)',
   outlook: 'var(--color-warning)',
 };
 
@@ -207,7 +207,7 @@ function CategoryChart({ data }: { data: CategoryPoint[] }) {
               className={styles.stackedSegment}
               style={{
                 width: `${pct}%`,
-                backgroundColor: CATEGORY_COLORS[cat.category] || 'var(--color-slate-lighter)',
+                backgroundColor: CATEGORY_COLORS[cat.category] || 'var(--color-text-muted)',
               }}
               title={`${CATEGORY_LABELS[cat.category] || cat.category}: ${cat.count} (${pct.toFixed(1)}%)`}
             />
@@ -224,7 +224,7 @@ function CategoryChart({ data }: { data: CategoryPoint[] }) {
               <span
                 className={styles.legendDot}
                 style={{
-                  backgroundColor: CATEGORY_COLORS[cat.category] || 'var(--color-slate-lighter)',
+                  backgroundColor: CATEGORY_COLORS[cat.category] || 'var(--color-text-muted)',
                 }}
               />
               <span className={styles.legendLabel}>
@@ -305,7 +305,7 @@ function MemberActivityChart({ data }: { data: MemberActivity }) {
             className={styles.stackedSegment}
             style={{
               width: `${activePct}%`,
-              backgroundColor: 'var(--color-emerald)',
+              backgroundColor: 'var(--color-accent)',
             }}
             title={`Aktif: ${data.active} (${activePct.toFixed(1)}%)`}
           />
@@ -315,7 +315,7 @@ function MemberActivityChart({ data }: { data: MemberActivity }) {
             className={styles.stackedSegment}
             style={{
               width: `${inactivePct}%`,
-              backgroundColor: 'var(--color-slate-muted)',
+              backgroundColor: 'var(--color-text-muted)',
             }}
             title={`Tidak aktif: ${data.inactive} (${inactivePct.toFixed(1)}%)`}
           />
@@ -327,7 +327,7 @@ function MemberActivityChart({ data }: { data: MemberActivity }) {
         <div className={styles.memberStatItem}>
           <span
             className={styles.legendDot}
-            style={{ backgroundColor: 'var(--color-emerald)' }}
+            style={{ backgroundColor: 'var(--color-accent)' }}
           />
           <span>Aktif (30 hari)</span>
           <strong>{data.active}</strong>
@@ -335,7 +335,7 @@ function MemberActivityChart({ data }: { data: MemberActivity }) {
         <div className={styles.memberStatItem}>
           <span
             className={styles.legendDot}
-            style={{ backgroundColor: 'var(--color-slate-muted)' }}
+            style={{ backgroundColor: 'var(--color-text-muted)' }}
           />
           <span>Tidak Aktif</span>
           <strong>{data.inactive}</strong>

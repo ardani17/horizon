@@ -27,7 +27,7 @@
 .description {
   margin-top: var(--space-3);
   font-size: var(--text-sm);
-  color: var(--color-slate-lighter);
+  color: var(--color-text-muted);
   line-height: 1.6;
 }
 
@@ -40,7 +40,7 @@
 .empty {
   text-align: center;
   padding: var(--space-12) var(--space-4);
-  color: var(--color-slate-muted);
+  color: var(--color-text-muted);
 }
 
 .emptyIcon {
