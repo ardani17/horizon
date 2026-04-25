@@ -2,7 +2,7 @@
 // Horizon Trader Platform — API Key Authentication
 // ============================================
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { query, execute } from '@shared/db';
 import type { ApiKey } from '@shared/types';
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ---- Mock bcrypt before importing the module under test ----
-vi.mock('bcrypt', () => ({
+vi.mock('bcryptjs', () => ({
   default: {
     compare: vi.fn(),
   },
@@ -13,7 +13,7 @@ vi.mock('@shared/db', () => ({
   execute: vi.fn(),
 }));
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { query, execute } from '@shared/db';
 import {
   extractApiKey,

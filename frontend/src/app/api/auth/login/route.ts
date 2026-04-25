@@ -3,7 +3,7 @@
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { queryOne } from '@shared/db';
 import { ActivityLogService } from '@shared/services/activityLog';
 import type { User } from '@shared/types';
