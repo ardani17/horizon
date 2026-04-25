@@ -1,10 +1,10 @@
 # Upstream definitions
 upstream frontend {
-    server frontend:3000;
+    server frontend:${FRONTEND_PORT};
 }
 
 upstream bot {
-    server bot:4000;
+    server bot:${BOT_PORT};
 }
 
 # Redirect HTTP to HTTPS (and handle certbot challenge)
@@ -37,10 +37,8 @@ server {
     server_name _;
 
     # SSL certificates (Let's Encrypt via certbot)
-    # Replace 'horizon.example.com' with your actual domain, or use
-    # envsubst to template this file at container startup.
-    ssl_certificate /etc/letsencrypt/live/horizon.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/horizon.example.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;

@@ -1,0 +1,313 @@
+#!/bin/bash
+# ============================================
+# Horizon Trader Platform — Docker Deploy Script
+#
+# Deploy seluruh stack di bare server yang hanya
+# membutuhkan Docker dan Docker Compose.
+#
+# Usage: bash deploy-docker.sh
+# ============================================
+
+set -e
+
+# ── Colors & helpers ────────────────────────
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+info()  { echo -e "${CYAN}[INFO]${NC}  $1"; }
+ok()    { echo -e "${GREEN}[OK]${NC}    $1"; }
+warn()  { echo -e "${YELLOW}[WARN]${NC}  $1"; }
+err()   { echo -e "${RED}[ERROR]${NC} $1"; }
+
+banner() {
+    echo ""
+    echo "=========================================="
+    echo "  Horizon Trader Platform — Docker Deploy"
+    echo "=========================================="
+    echo ""
+}
+
+# ── 1. validate_env ─────────────────────────
+
+validate_env() {
+    info "Memeriksa file .env ..."
+
+    if [ ! -f .env ]; then
+        err "File .env tidak ditemukan!"
+        echo "  Copy .env.example ke .env dan isi semua nilai yang diperlukan:"
+        echo "    cp .env.example .env"
+        exit 1
+    fi
+
+    # shellcheck disable=SC1091
+    set -a
+    source .env
+    set +a
+
+    ok "File .env ditemukan dan dimuat."
+}
+
+# ── 2. check_required_vars ──────────────────
+
+check_required_vars() {
+    info "Memvalidasi variabel wajib ..."
+
+    local required_vars=(
+        DOMAIN
+        SSL_EMAIL
+        POSTGRES_DB
+        POSTGRES_USER
+        POSTGRES_PASSWORD
+        TELEGRAM_BOT_TOKEN
+        R2_ACCESS_KEY_ID
+        R2_SECRET_ACCESS_KEY
+        R2_BUCKET_NAME
+        ADMIN_USERNAME
+        ADMIN_PASSWORD
+    )
+
+    local missing=()
+
+    for var in "${required_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            missing+=("$var")
+        fi
+    done
+
+    if [ ${#missing[@]} -gt 0 ]; then
+        err "Variabel wajib berikut belum diisi di .env:"
+        for var in "${missing[@]}"; do
+            echo "  - $var"
+        done
+        exit 1
+    fi
+
+    # Validasi DOMAIN tidak mengandung placeholder
+    case "$DOMAIN" in
+        *yourdomain.com*|*example.com*)
+            err "DOMAIN masih mengandung placeholder: $DOMAIN"
+            echo "  Ganti dengan domain asli Anda di file .env"
+            exit 1
+            ;;
+    esac
+
+    # Validasi ADMIN_PASSWORD tidak mengandung default
+    case "$ADMIN_PASSWORD" in
+        *admin123*|*password*|*GANTI_PASSWORD*)
+            err "ADMIN_PASSWORD masih menggunakan nilai default: $ADMIN_PASSWORD"
+            echo "  Ganti dengan password yang kuat di file .env"
+            exit 1
+            ;;
+    esac
+
+    ok "Semua variabel wajib tervalidasi."
+}
+
+# ── 3. auto_construct_vars ──────────────────
+
+auto_construct_vars() {
+    info "Mengkonstruksi variabel otomatis ..."
+
+    export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}"
+    export TELEGRAM_WEBHOOK_URL="https://${DOMAIN}/webhook/telegram"
+    export FRONTEND_URL="https://${DOMAIN}"
+    export NEXT_PUBLIC_SITE_URL="https://${DOMAIN}"
+
+    ok "DATABASE_URL       = postgresql://${POSTGRES_USER}:****@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}"
+    ok "TELEGRAM_WEBHOOK_URL = ${TELEGRAM_WEBHOOK_URL}"
+    ok "FRONTEND_URL       = ${FRONTEND_URL}"
+    ok "NEXT_PUBLIC_SITE_URL = ${NEXT_PUBLIC_SITE_URL}"
+}
+
+# ── 4. set_defaults ─────────────────────────
+
+set_defaults() {
+    info "Menetapkan nilai default untuk variabel opsional ..."
+
+    export FRONTEND_PORT="${FRONTEND_PORT:-3000}"
+    export BOT_PORT="${BOT_PORT:-4000}"
+    export NGINX_HTTP_PORT="${NGINX_HTTP_PORT:-80}"
+    export NGINX_HTTPS_PORT="${NGINX_HTTPS_PORT:-443}"
+
+    export NGINX_RATE_LIMIT_GENERAL="${NGINX_RATE_LIMIT_GENERAL:-30r/s}"
+    export NGINX_RATE_LIMIT_API="${NGINX_RATE_LIMIT_API:-10r/s}"
+    export NGINX_RATE_LIMIT_WEBHOOK="${NGINX_RATE_LIMIT_WEBHOOK:-5r/s}"
+
+    export DB_DATA_DIR="${DB_DATA_DIR:-./data/postgres}"
+
+    ok "Defaults: FRONTEND_PORT=${FRONTEND_PORT}, BOT_PORT=${BOT_PORT}"
+    ok "Defaults: NGINX_HTTP_PORT=${NGINX_HTTP_PORT}, NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT}"
+    ok "Defaults: Rate limits — general=${NGINX_RATE_LIMIT_GENERAL}, api=${NGINX_RATE_LIMIT_API}, webhook=${NGINX_RATE_LIMIT_WEBHOOK}"
+    ok "Defaults: DB_DATA_DIR=${DB_DATA_DIR}"
+}
+
+# ── 5. setup_directories ───────────────────
+
+setup_directories() {
+    info "Membuat direktori yang diperlukan ..."
+
+    mkdir -p "${DB_DATA_DIR}"
+    mkdir -p ./certbot/conf
+    mkdir -p ./certbot/www
+    mkdir -p "./certbot/conf/live/${DOMAIN}"
+
+    ok "Direktori siap: ${DB_DATA_DIR}, ./certbot/conf, ./certbot/www"
+}
+
+# ── 6. generate_self_signed ─────────────────
+
+generate_self_signed() {
+    local cert_path="./certbot/conf/live/${DOMAIN}/fullchain.pem"
+    local key_path="./certbot/conf/live/${DOMAIN}/privkey.pem"
+
+    if [ -f "$cert_path" ]; then
+        ok "Sertifikat sudah ada di ${cert_path} — skip generate."
+        return
+    fi
+
+    info "Membuat sertifikat self-signed sementara untuk ${DOMAIN} ..."
+
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout "$key_path" \
+        -out "$cert_path" \
+        -subj "/CN=${DOMAIN}/O=Horizon Trader/C=ID" \
+        2>/dev/null
+
+    ok "Sertifikat self-signed berhasil dibuat."
+}
+
+# ── 7. build_and_start ──────────────────────
+
+build_and_start() {
+    info "Building Docker images (--no-cache) ..."
+
+    if ! docker compose build --no-cache; then
+        err "Docker build gagal! Periksa log di atas untuk detail error."
+        exit 1
+    fi
+
+    ok "Build selesai."
+
+    info "Menjalankan semua service ..."
+    docker compose up -d
+
+    ok "Semua container dimulai."
+}
+
+# ── 8. request_letsencrypt ──────────────────
+
+request_letsencrypt() {
+    local cert_path="./certbot/conf/live/${DOMAIN}/fullchain.pem"
+
+    # Cek apakah sertifikat yang ada adalah Let's Encrypt (bukan self-signed)
+    if [ -f "$cert_path" ]; then
+        local issuer
+        issuer=$(openssl x509 -in "$cert_path" -noout -issuer 2>/dev/null || true)
+        if echo "$issuer" | grep -qi "Let's Encrypt"; then
+            ok "Sertifikat Let's Encrypt sudah ada — skip request."
+            return
+        fi
+    fi
+
+    info "Meminta sertifikat Let's Encrypt untuk ${DOMAIN} ..."
+
+    if docker compose run --rm certbot certonly \
+        --webroot \
+        --webroot-path=/var/www/certbot \
+        --email "${SSL_EMAIL}" \
+        --agree-tos \
+        --no-eff-email \
+        -d "${DOMAIN}"; then
+
+        ok "Sertifikat Let's Encrypt berhasil diperoleh!"
+
+        info "Reload Nginx untuk menggunakan sertifikat baru ..."
+        docker exec horizon-nginx nginx -s reload
+        ok "Nginx berhasil di-reload."
+    else
+        warn "Gagal memperoleh sertifikat Let's Encrypt."
+        warn "Site tetap berjalan dengan sertifikat self-signed."
+        warn "Pastikan DNS A record untuk ${DOMAIN} sudah mengarah ke IP server ini,"
+        warn "lalu jalankan ulang script ini."
+    fi
+}
+
+# ── 9. health_check ─────────────────────────
+
+health_check() {
+    echo ""
+    info "Menjalankan health check ..."
+    echo ""
+
+    local services=("db" "bot" "frontend" "nginx")
+    local containers=("horizon-db" "horizon-bot" "horizon-frontend" "horizon-nginx")
+    local max_retries=30
+    local all_healthy=true
+
+    for i in "${!services[@]}"; do
+        local svc="${services[$i]}"
+        local ctr="${containers[$i]}"
+        local healthy=false
+
+        echo -n "  ${svc}: "
+
+        for attempt in $(seq 1 "$max_retries"); do
+            local status
+            status=$(docker inspect --format='{{.State.Health.Status}}' "$ctr" 2>/dev/null || echo "unknown")
+
+            if [ "$status" = "healthy" ]; then
+                healthy=true
+                break
+            fi
+            sleep 2
+        done
+
+        if $healthy; then
+            echo -e "${GREEN}✅ Healthy${NC}"
+        else
+            echo -e "${RED}❌ Not healthy${NC} (cek: docker logs ${ctr})"
+            all_healthy=false
+        fi
+    done
+
+    echo ""
+    echo "=========================================="
+
+    if $all_healthy; then
+        echo -e "  ${GREEN}✅ Deploy berhasil! Semua service healthy.${NC}"
+    else
+        echo -e "  ${YELLOW}⚠️  Deploy selesai, tapi ada service yang belum healthy.${NC}"
+        echo "  Periksa log container yang bermasalah."
+    fi
+
+    echo ""
+    echo "  Langkah selanjutnya:"
+    echo "  1. Pastikan DNS A record untuk ${DOMAIN} mengarah ke IP server ini"
+    echo "  2. Verifikasi HTTPS: https://${DOMAIN}"
+    echo "  3. Cek admin panel: https://${DOMAIN}/admin"
+    echo "  4. Cek bot status: https://${DOMAIN}/api/bot/status"
+    echo ""
+    echo "=========================================="
+    echo ""
+}
+
+# ── Main ────────────────────────────────────
+
+main() {
+    banner
+    validate_env
+    check_required_vars
+    auto_construct_vars
+    set_defaults
+    setup_directories
+    generate_self_signed
+    build_and_start
+    request_letsencrypt
+    health_check
+}
+
+main

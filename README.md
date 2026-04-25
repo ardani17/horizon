@@ -22,7 +22,7 @@ Platform komunitas trader dengan integrasi Telegram Bot dan website bergaya retr
 - **Bot:** Node.js, Express, grammy (Telegram Bot framework)
 - **Database:** PostgreSQL 16
 - **Media Storage:** Cloudflare R2
-- **Deployment:** Docker Compose, Nginx reverse proxy
+- **Deployment:** Docker Compose, Nginx reverse proxy (container), Certbot SSL auto-renewal
 
 ## Penggunaan Telegram Bot
 
@@ -104,6 +104,7 @@ Nilai kredit bisa diubah oleh admin melalui dashboard.
 ### Prasyarat
 
 - Docker & Docker Compose
+- Domain yang sudah diarahkan ke IP server (DNS A record)
 - Telegram Bot Token (dari [@BotFather](https://t.me/BotFather))
 - Cloudflare R2 bucket (untuk media storage)
 
@@ -116,58 +117,58 @@ cd horizon-trader-platform
 cp .env.example .env
 ```
 
-Edit `.env` dan isi semua nilai yang diperlukan:
+Edit `.env` dan isi semua variabel yang bertanda `[REQUIRED]`. Variabel bertanda `[AUTO-CONSTRUCTED]` tidak perlu diisi — nilainya dikonstruksi otomatis oleh deploy script.
+
+Variabel wajib:
 
 ```env
+# Domain & SSL
+DOMAIN=yourdomain.com
+SSL_EMAIL=admin@yourdomain.com
+
 # Database
+POSTGRES_DB=horizon
+POSTGRES_USER=horizon_user
 POSTGRES_PASSWORD=password_aman_anda
 
 # Telegram
 TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
-TELEGRAM_GROUP_ID=-1001234567890
-TELEGRAM_WEBHOOK_URL=https://yourdomain.com/webhook/telegram
 
 # Cloudflare R2
 R2_ACCESS_KEY_ID=your_access_key
 R2_SECRET_ACCESS_KEY=your_secret_key
 R2_BUCKET_NAME=horizon-media
-R2_PUBLIC_URL=https://your-r2-public-url.com
 
 # Admin
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=password_admin_aman
 ```
 
-### 2. Jalankan dengan Docker Compose
+Lihat `.env.example` untuk daftar lengkap variabel beserta penjelasannya.
 
-**Development:**
+### 2. Deploy
+
 ```bash
-docker compose up -d --build
-```
-
-Akses:
-- Frontend: http://localhost:80
-- Bot API: http://localhost:4000/api/bot/status
-- Database: localhost:5432
-
-**Production (AAPanel):**
-```bash
-bash deploy.sh
+bash deploy-docker.sh
 ```
 
 Script ini akan:
-1. Validasi file `.env`
-2. Build semua image
-3. Start semua service
-4. Verifikasi health check
+1. Validasi semua variabel wajib di `.env`
+2. Auto-construct `DATABASE_URL`, `TELEGRAM_WEBHOOK_URL`, `FRONTEND_URL`, `NEXT_PUBLIC_SITE_URL`
+3. Generate sertifikat self-signed sementara (jika belum ada)
+4. Build semua Docker image (`--no-cache`)
+5. Start semua service (db, bot, frontend, nginx, certbot)
+6. Request sertifikat Let's Encrypt (jika DNS sudah benar)
+7. Tampilkan health check status
 
-Akses setelah deploy:
-- Frontend: http://127.0.0.1:3888
-- Bot API: http://127.0.0.1:4888/api/bot/status
+Setelah deploy berhasil:
+- Website: `https://yourdomain.com`
+- Admin: `https://yourdomain.com/admin`
+- Bot API: `https://yourdomain.com/api/bot/status`
 
 ### 3. Setup Telegram Webhook
 
-Setelah service berjalan, set webhook Telegram ke URL bot Anda:
+Webhook otomatis dikonstruksi dari variabel `DOMAIN` (`https://<DOMAIN>/webhook/telegram`). Setelah deploy, set webhook:
 
 ```bash
 curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
@@ -175,16 +176,29 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
   -d '{"url": "https://yourdomain.com/webhook/telegram"}'
 ```
 
-### 4. Setup Reverse Proxy (Production)
+### 4. Re-deploy & Update
 
-Untuk AAPanel, paste konfigurasi dari `aapanel-nginx.conf` ke site config:
+Script `deploy-docker.sh` bersifat idempotent — aman dijalankan berulang kali:
 
-| Path | Target |
-|------|--------|
-| `/` | Frontend (localhost:3888) |
-| `/api/bot/*` | Bot (localhost:4888) |
-| `/webhook/telegram` | Bot (localhost:4888) |
-| `/_next/static/` | Frontend + cache 1 tahun |
+```bash
+bash deploy-docker.sh
+```
+
+- Jika sertifikat Let's Encrypt sudah ada, tidak akan request ulang
+- Selalu build fresh image untuk memastikan perubahan kode ter-deploy
+- Data database aman (bind mount di `${DB_DATA_DIR}`)
+
+### 5. Backup Database
+
+Data PostgreSQL disimpan di host directory (default: `./data/postgres`). Untuk backup:
+
+```bash
+# Copy langsung dari host
+cp -r ./data/postgres /path/to/backup/
+
+# Atau gunakan pg_dump via container
+docker exec horizon-db pg_dump -U horizon_user horizon > backup.sql
+```
 
 ## Development
 
@@ -274,11 +288,15 @@ horizon-trader-platform/
 ├── db/
 │   ├── migrations/         # SQL schema & seed data
 │   └── init.sh             # DB initialization script
-├── docker-compose.yml      # Development config
-├── docker-compose.prod.yml # Production config (AAPanel)
-├── deploy.sh               # Deployment script
-├── aapanel-nginx.conf      # Nginx reverse proxy config
-└── .env.example            # Template environment variables
+├── nginx/                  # Nginx reverse proxy config
+│   ├── nginx.conf          # Main config (rate limit template)
+│   ├── templates/
+│   │   └── default.conf.template  # Server blocks (envsubst template)
+│   └── docker-entrypoint.sh       # Custom entrypoint for envsubst
+├── docker-compose.yml      # Full Docker stack (semua service)
+├── deploy-docker.sh        # Deploy script untuk bare server
+├── aapanel-nginx.conf      # Legacy — referensi config AAPanel lama
+└── .env.example            # Template environment variables (dokumentasi lengkap)
 ```
 
 ## Lisensi
