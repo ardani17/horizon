@@ -9,15 +9,15 @@ import { parseHashtags, mapHashtagToCategory } from '../../../bot/src/utils/hash
 
 describe('parseHashtags', () => {
   it('should extract a single hashtag', () => {
-    expect(parseHashtags('Hello #jurnal world')).toEqual(['jurnal']);
+    expect(parseHashtags('Hello #trading world')).toEqual(['trading']);
   });
 
   it('should extract multiple hashtags', () => {
-    expect(parseHashtags('#jurnal some text #trading')).toEqual(['jurnal', 'trading']);
+    expect(parseHashtags('#cerita some text #trading')).toEqual(['cerita', 'trading']);
   });
 
   it('should return lowercase hashtags regardless of input case', () => {
-    expect(parseHashtags('#Jurnal #TRADING #Cerita')).toEqual(['jurnal', 'trading', 'cerita']);
+    expect(parseHashtags('#General #TRADING #Cerita')).toEqual(['general', 'trading', 'cerita']);
   });
 
   it('should return empty array when no hashtags are present', () => {
@@ -29,7 +29,7 @@ describe('parseHashtags', () => {
   });
 
   it('should handle hashtag at the beginning of text', () => {
-    expect(parseHashtags('#kehidupan My life story')).toEqual(['kehidupan']);
+    expect(parseHashtags('#cerita My life story')).toEqual(['cerita']);
   });
 
   it('should handle hashtag at the end of text', () => {
@@ -37,11 +37,11 @@ describe('parseHashtags', () => {
   });
 
   it('should handle consecutive hashtags', () => {
-    expect(parseHashtags('#jurnal#trading')).toEqual(['jurnal', 'trading']);
+    expect(parseHashtags('#cerita#trading')).toEqual(['cerita', 'trading']);
   });
 
   it('should strip the # prefix from results', () => {
-    const result = parseHashtags('#jurnal');
+    const result = parseHashtags('#trading');
     expect(result[0]).not.toContain('#');
   });
 
@@ -50,17 +50,13 @@ describe('parseHashtags', () => {
   });
 
   it('should handle mixed recognized and unrecognized hashtags', () => {
-    expect(parseHashtags('#jurnal #random #cerita')).toEqual(['jurnal', 'random', 'cerita']);
+    expect(parseHashtags('#trading #random #cerita')).toEqual(['trading', 'random', 'cerita']);
   });
 });
 
 // ---- mapHashtagToCategory Tests ----
 
 describe('mapHashtagToCategory', () => {
-  it('should map #jurnal to trading', () => {
-    expect(mapHashtagToCategory(['jurnal'])).toBe('trading');
-  });
-
   it('should map #trading to trading', () => {
     expect(mapHashtagToCategory(['trading'])).toBe('trading');
   });
@@ -69,8 +65,8 @@ describe('mapHashtagToCategory', () => {
     expect(mapHashtagToCategory(['cerita'])).toBe('life_story');
   });
 
-  it('should map #kehidupan to life_story', () => {
-    expect(mapHashtagToCategory(['kehidupan'])).toBe('life_story');
+  it('should map #general to general', () => {
+    expect(mapHashtagToCategory(['general'])).toBe('general');
   });
 
   it('should return general when no recognized hashtags', () => {
@@ -87,7 +83,7 @@ describe('mapHashtagToCategory', () => {
   });
 
   it('should skip unrecognized hashtags and use first recognized one', () => {
-    expect(mapHashtagToCategory(['random', 'unknown', 'jurnal'])).toBe('trading');
+    expect(mapHashtagToCategory(['random', 'unknown', 'trading'])).toBe('trading');
   });
 
   it('should be deterministic — same input always produces same output', () => {
@@ -111,11 +107,6 @@ describe('mapHashtagToCategory', () => {
 // ---- Integration: parseHashtags + mapHashtagToCategory ----
 
 describe('parseHashtags + mapHashtagToCategory integration', () => {
-  it('should categorize a #jurnal message as trading', () => {
-    const hashtags = parseHashtags('My trading journal entry #jurnal');
-    expect(mapHashtagToCategory(hashtags)).toBe('trading');
-  });
-
   it('should categorize a #trading message as trading', () => {
     const hashtags = parseHashtags('#trading EURUSD analysis');
     expect(mapHashtagToCategory(hashtags)).toBe('trading');
@@ -126,9 +117,9 @@ describe('parseHashtags + mapHashtagToCategory integration', () => {
     expect(mapHashtagToCategory(hashtags)).toBe('life_story');
   });
 
-  it('should categorize a #kehidupan message as life_story', () => {
-    const hashtags = parseHashtags('#kehidupan Refleksi pagi ini');
-    expect(mapHashtagToCategory(hashtags)).toBe('life_story');
+  it('should categorize a #general message as general', () => {
+    const hashtags = parseHashtags('#general Some general content');
+    expect(mapHashtagToCategory(hashtags)).toBe('general');
   });
 
   it('should categorize a message without recognized hashtags as general', () => {
@@ -142,7 +133,7 @@ describe('parseHashtags + mapHashtagToCategory integration', () => {
   });
 
   it('should use first recognized hashtag when multiple are present', () => {
-    const hashtags = parseHashtags('#kehidupan #jurnal mixed content');
+    const hashtags = parseHashtags('#cerita #trading mixed content');
     expect(mapHashtagToCategory(hashtags)).toBe('life_story');
   });
 });

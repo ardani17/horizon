@@ -16,8 +16,6 @@ import {
 } from './middleware/index';
 import type { BotContext, TelegramMessage } from './middleware/types';
 import { HashtagHandler } from './handlers/hashtagHandler';
-import { StoryHandler } from './handlers/storyHandler';
-import { CeritaHandler } from './handlers/ceritaHandler';
 import { PublishHandler } from './handlers/publishHandler';
 import { HelpHandler } from './handlers/helpHandler';
 import { queryOne, execute } from '../../shared/db/query';
@@ -92,7 +90,6 @@ async function insertArticle(
     content_html: string;
     title: string | null;
     category: string;
-    content_type: string;
     source: string;
     status: string;
     slug: string;
@@ -100,10 +97,10 @@ async function insertArticle(
   client: DbClient,
 ): Promise<{ id: string }> {
   const result = await queryOne<{ id: string }>(
-    `INSERT INTO articles (author_id, content_html, title, category, content_type, source, status, slug)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO articles (author_id, content_html, title, category, source, status, slug)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING id`,
-    [data.author_id, data.content_html, data.title, data.category, data.content_type, data.source, data.status, data.slug],
+    [data.author_id, data.content_html, data.title, data.category, data.source, data.status, data.slug],
     client,
   );
   if (!result) {
@@ -213,8 +210,6 @@ const mediaHandlerDeps = {
 // ---- Register Command Handlers ----
 
 const hashtagHandler = new HashtagHandler(mediaHandlerDeps);
-const storyHandler = new StoryHandler(sharedHandlerDeps);
-const ceritaHandler = new CeritaHandler(sharedHandlerDeps);
 const publishHandler = new PublishHandler(mediaHandlerDeps);
 const helpHandler = new HelpHandler(() => commandRegistry.listCommands());
 
@@ -230,14 +225,11 @@ function createHashtagAlias(name: string): import('./commands/types').CommandHan
   };
 }
 
-commandRegistry.register(createHashtagAlias('#jurnal'));
 commandRegistry.register(createHashtagAlias('#trading'));
 commandRegistry.register(createHashtagAlias('#cerita'));
-commandRegistry.register(createHashtagAlias('#kehidupan'));
+commandRegistry.register(createHashtagAlias('#general'));
 
 // Register slash commands
-commandRegistry.register(storyHandler);
-commandRegistry.register(ceritaHandler);
 commandRegistry.register(publishHandler);
 commandRegistry.register(helpHandler);
 

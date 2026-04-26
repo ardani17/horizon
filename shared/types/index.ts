@@ -31,14 +31,6 @@ export const ArticleStatus = {
 
 export type ArticleStatus = (typeof ArticleStatus)[keyof typeof ArticleStatus];
 
-/** Article content types */
-export const ContentType = {
-  SHORT: 'short',
-  LONG: 'long',
-} as const;
-
-export type ContentType = (typeof ContentType)[keyof typeof ContentType];
-
 /** Article source */
 export const ArticleSource = {
   TELEGRAM: 'telegram',
@@ -125,7 +117,6 @@ export interface Article {
   content_html: string;
   title: string | null;
   category: ArticleCategory;
-  content_type: ContentType;
   source: ArticleSource;
   status: ArticleStatus;
   slug: string;

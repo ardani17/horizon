@@ -17,10 +17,9 @@ import { describe, it, expect } from 'vitest';
 // from the bot package (which may have different tsconfig paths).
 
 const HASHTAG_CATEGORY_MAP: Record<string, string> = {
-  jurnal: 'trading',
   trading: 'trading',
   cerita: 'life_story',
-  kehidupan: 'life_story',
+  general: 'general',
 };
 
 function parseHashtags(text: string): string[] {
@@ -45,7 +44,6 @@ interface Article {
   content_html: string;
   title: string | null;
   category: string;
-  content_type: string;
   source: string;
   status: string;
   slug: string;
@@ -165,13 +163,12 @@ describe('17.1 Bot-to-Frontend Data Flow', () => {
   const botArticle: Article = {
     id: 'art-bot-1',
     author_id: 'user-1',
-    content_html: '<p>Jurnal trading hari ini #jurnal</p>',
-    title: 'Jurnal trading hari ini',
+    content_html: '<p>Trading analysis hari ini #trading</p>',
+    title: 'Trading analysis hari ini',
     category: 'trading',
-    content_type: 'short',
     source: 'telegram',
     status: 'published',
-    slug: 'jurnal-trading-hari-ini-abc123',
+    slug: 'trading-analysis-hari-ini-abc123',
     created_at: '2024-06-15T10:00:00Z',
   };
 
@@ -181,7 +178,6 @@ describe('17.1 Bot-to-Frontend Data Flow', () => {
     content_html: '<p>Admin article</p>',
     title: 'Admin article',
     category: 'general',
-    content_type: 'short',
     source: 'dashboard',
     status: 'published',
     slug: 'admin-article-def456',
@@ -267,13 +263,13 @@ describe('17.2 Admin Dashboard to Bot REST API', () => {
     const statsResponse = {
       success: true,
       data: {
-        commandUsage: { '#hashtag': 15, '/story': 8, '/cerita': 3, '/publish': 2 },
-        totalInvocations: 28,
+        commandUsage: { '#hashtag': 15, '/publish': 8, '/help': 3 },
+        totalInvocations: 26,
       },
     };
 
     expect(statsResponse.success).toBe(true);
-    expect(statsResponse.data.totalInvocations).toBe(28);
+    expect(statsResponse.data.totalInvocations).toBe(26);
     expect(statsResponse.data.commandUsage['#hashtag']).toBe(15);
   });
 
@@ -327,10 +323,8 @@ describe('17.3 Outlook Exclusivity', () => {
   it('bot hashtag mapper never produces "outlook" category', () => {
     // Test all recognized hashtags
     const testCases = [
-      { hashtags: ['jurnal'], expected: 'trading' },
       { hashtags: ['trading'], expected: 'trading' },
       { hashtags: ['cerita'], expected: 'life_story' },
-      { hashtags: ['kehidupan'], expected: 'life_story' },
       { hashtags: [], expected: 'general' },
       { hashtags: ['random'], expected: 'general' },
       { hashtags: ['outlook'], expected: 'general' }, // #outlook is NOT recognized
@@ -351,19 +345,14 @@ describe('17.3 Outlook Exclusivity', () => {
   it('bot handlers only produce trading, life_story, or general categories', () => {
     // Verify the possible categories from bot handlers:
     // - HashtagHandler: uses mapHashtagToCategory → trading | life_story | general
-    // - StoryHandler: hardcoded 'life_story'
-    // - CeritaHandler: hardcoded 'life_story'
     // - PublishHandler: uses mapHashtagToCategory → trading | life_story | general
     const botCategories = new Set<string>();
 
     // Simulate all possible hashtag inputs
-    const allHashtags = ['jurnal', 'trading', 'cerita', 'kehidupan', 'random', '', 'outlook'];
+    const allHashtags = ['trading', 'cerita', 'general', 'random', '', 'outlook'];
     for (const tag of allHashtags) {
       botCategories.add(mapHashtagToCategory(tag ? [tag] : []));
     }
-
-    // Add hardcoded categories from story/cerita handlers
-    botCategories.add('life_story');
 
     expect(botCategories.has('outlook')).toBe(false);
     expect([...botCategories].every((c) => ['trading', 'life_story', 'general'].includes(c))).toBe(true);
@@ -373,17 +362,17 @@ describe('17.3 Outlook Exclusivity', () => {
     const articles: Article[] = [
       {
         id: '1', author_id: 'u1', content_html: '<p>Trading</p>', title: 'Trading',
-        category: 'trading', content_type: 'short', source: 'telegram', status: 'published',
+        category: 'trading', source: 'telegram', status: 'published',
         slug: 'trading-abc', created_at: '2024-06-15T10:00:00Z',
       },
       {
         id: '2', author_id: 'u1', content_html: '<p>Outlook</p>', title: 'Outlook',
-        category: 'outlook', content_type: 'long', source: 'dashboard', status: 'published',
+        category: 'outlook', source: 'dashboard', status: 'published',
         slug: 'outlook-def', created_at: '2024-06-15T11:00:00Z',
       },
       {
         id: '3', author_id: 'u1', content_html: '<p>Life</p>', title: 'Life',
-        category: 'life_story', content_type: 'short', source: 'telegram', status: 'published',
+        category: 'life_story', source: 'telegram', status: 'published',
         slug: 'life-ghi', created_at: '2024-06-15T12:00:00Z',
       },
     ];
@@ -397,12 +386,12 @@ describe('17.3 Outlook Exclusivity', () => {
     const articles: Article[] = [
       {
         id: '1', author_id: 'u1', content_html: '<p>Trading</p>', title: 'Trading',
-        category: 'trading', content_type: 'short', source: 'telegram', status: 'published',
+        category: 'trading', source: 'telegram', status: 'published',
         slug: 'trading-abc', created_at: '2024-06-15T10:00:00Z',
       },
       {
         id: '2', author_id: 'u1', content_html: '<p>Outlook</p>', title: 'Outlook',
-        category: 'outlook', content_type: 'long', source: 'dashboard', status: 'published',
+        category: 'outlook', source: 'dashboard', status: 'published',
         slug: 'outlook-def', created_at: '2024-06-15T11:00:00Z',
       },
     ];
@@ -460,17 +449,17 @@ describe('17.4 Credit Finality', () => {
   const articles: Article[] = [
     {
       id: 'art-1', author_id: 'user-1', content_html: '<p>Article 1</p>', title: 'Article 1',
-      category: 'trading', content_type: 'short', source: 'telegram', status: 'published',
+      category: 'trading', source: 'telegram', status: 'published',
       slug: 'article-1-abc', created_at: '2024-06-10T10:00:00Z',
     },
     {
       id: 'art-2', author_id: 'user-1', content_html: '<p>Article 2</p>', title: 'Article 2',
-      category: 'life_story', content_type: 'short', source: 'telegram', status: 'published',
+      category: 'life_story', source: 'telegram', status: 'published',
       slug: 'article-2-def', created_at: '2024-06-11T10:00:00Z',
     },
     {
       id: 'art-3', author_id: 'user-1', content_html: '<p>Article 3</p>', title: 'Article 3',
-      category: 'trading', content_type: 'short', source: 'telegram', status: 'published',
+      category: 'trading', source: 'telegram', status: 'published',
       slug: 'article-3-ghi', created_at: '2024-06-12T10:00:00Z',
     },
   ];

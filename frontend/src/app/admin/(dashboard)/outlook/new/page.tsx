@@ -18,7 +18,7 @@ import styles from '../../articles/articles.module.css';
  *
  * Upload form for Outlook (market analysis) articles with rich text editor,
  * inline image uploads, and preview. Articles are always created with
- * category "outlook", content_type "long", and source "dashboard".
+ * category "outlook" and source "dashboard".
  *
  * Requirements: 27.5, 27.6
  */
@@ -56,7 +56,6 @@ export default function AdminNewOutlookPage() {
           title: data.title,
           content_html: finalContent,
           category: 'outlook',
-          content_type: 'long',
           status: data.status,
         }),
       });

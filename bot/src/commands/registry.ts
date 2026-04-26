@@ -9,9 +9,9 @@ import type { CommandHandler, ICommandRegistry } from './types';
  * Registry for bot command handlers using the registry pattern.
  *
  * Supports two handler types:
- * - **command**: Slash commands like `/story`, `/cerita`, `/publish`.
+ * - **command**: Slash commands like `/publish`, `/help`.
  *   Matched against the first word of the message text.
- * - **hashtag**: Hashtag triggers like `#jurnal`, `#cerita`.
+ * - **hashtag**: Hashtag triggers like `#trading`, `#cerita`.
  *   Matched against any hashtag found in the message text.
  *
  * Unregistered commands or messages without matching triggers resolve to null.
@@ -50,7 +50,7 @@ export class CommandRegistry implements ICommandRegistry {
     // Check for slash command (first word starting with /)
     if (text.startsWith('/')) {
       const commandName = text.split(/\s+/)[0].toLowerCase();
-      // Strip @botname suffix if present (e.g., /story@HorizonBot → /story)
+      // Strip @botname suffix if present (e.g., /publish@HorizonBot → /publish)
       const cleanCommand = commandName.split('@')[0];
       const handler = this.handlers.get(cleanCommand);
       return handler && handler.type === 'command' ? handler : null;
@@ -78,7 +78,7 @@ export class CommandRegistry implements ICommandRegistry {
 
 /**
  * Extract hashtags from a text string.
- * Returns an array of hashtags including the `#` prefix, e.g., ["#jurnal", "#trading"].
+ * Returns an array of hashtags including the `#` prefix, e.g., ["#trading", "#cerita"].
  */
 function extractHashtags(text: string): string[] {
   const matches = text.match(/#\w+/g);

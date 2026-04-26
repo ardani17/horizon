@@ -21,7 +21,6 @@ interface ArticleRow {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   created_at: Date;
   author_name: string | null;
@@ -30,7 +29,7 @@ interface ArticleRow {
 async function getPublishedArticles(): Promise<ArticleCardData[]> {
   try {
     const result = await query<ArticleRow>(
-      `SELECT a.id, a.title, a.content_html, a.category, a.content_type, a.slug, a.created_at, u.username AS author_name
+      `SELECT a.id, a.title, a.content_html, a.category, a.slug, a.created_at, u.username AS author_name
        FROM articles a
        LEFT JOIN users u ON a.author_id = u.id
        WHERE a.status = $1 AND a.category != $2
@@ -43,7 +42,6 @@ async function getPublishedArticles(): Promise<ArticleCardData[]> {
       title: row.title,
       content_html: row.content_html,
       category: row.category,
-      content_type: row.content_type,
       slug: row.slug,
       created_at: row.created_at instanceof Date
         ? row.created_at.toISOString()

@@ -52,19 +52,19 @@ describe('CommandStats', () => {
   });
 
   it('increments a command count', () => {
-    stats.increment('/story');
-    expect(stats.get('/story')).toBe(1);
-    stats.increment('/story');
-    expect(stats.get('/story')).toBe(2);
+    stats.increment('/publish');
+    expect(stats.get('/publish')).toBe(1);
+    stats.increment('/publish');
+    expect(stats.get('/publish')).toBe(2);
   });
 
   it('tracks multiple commands independently', () => {
-    stats.increment('/story');
-    stats.increment('/cerita');
-    stats.increment('/story');
+    stats.increment('/publish');
+    stats.increment('/help');
+    stats.increment('/publish');
 
-    expect(stats.get('/story')).toBe(2);
-    expect(stats.get('/cerita')).toBe(1);
+    expect(stats.get('/publish')).toBe(2);
+    expect(stats.get('/help')).toBe(1);
     expect(stats.total()).toBe(3);
   });
 
@@ -89,13 +89,13 @@ describe('GET /api/bot/commands', () => {
     const { app, registry } = createTestApp();
 
     registry.register(makeHandler({
-      name: '/story',
-      description: 'Create a short story',
+      name: '/publish',
+      description: 'Publish a message as article',
       type: 'command',
       permission: 'member',
     }));
     registry.register(makeHandler({
-      name: '#jurnal',
+      name: '#trading',
       description: 'Trading journal via hashtag',
       type: 'hashtag',
       permission: 'member',
@@ -106,17 +106,17 @@ describe('GET /api/bot/commands', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.commands).toHaveLength(2);
 
-    const storyCmd = res.body.data.commands.find((c: any) => c.name === '/story');
-    expect(storyCmd).toEqual({
-      name: '/story',
-      description: 'Create a short story',
+    const publishCmd = res.body.data.commands.find((c: any) => c.name === '/publish');
+    expect(publishCmd).toEqual({
+      name: '/publish',
+      description: 'Publish a message as article',
       type: 'command',
       permission: 'member',
     });
 
-    const jurnalCmd = res.body.data.commands.find((c: any) => c.name === '#jurnal');
-    expect(jurnalCmd).toEqual({
-      name: '#jurnal',
+    const tradingCmd = res.body.data.commands.find((c: any) => c.name === '#trading');
+    expect(tradingCmd).toEqual({
+      name: '#trading',
       description: 'Trading journal via hashtag',
       type: 'hashtag',
       permission: 'member',
@@ -149,15 +149,15 @@ describe('GET /api/bot/stats', () => {
 
   it('returns accumulated stats', async () => {
     const { app, stats } = createTestApp();
-    stats.increment('/story');
-    stats.increment('/story');
-    stats.increment('/cerita');
+    stats.increment('/publish');
+    stats.increment('/publish');
+    stats.increment('/help');
 
     const res = await request(app).get('/api/bot/stats');
 
     expect(res.body.data.commandUsage).toEqual({
-      '/story': 2,
-      '/cerita': 1,
+      '/publish': 2,
+      '/help': 1,
     });
     expect(res.body.data.totalInvocations).toBe(3);
   });

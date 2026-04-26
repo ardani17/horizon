@@ -83,7 +83,6 @@ export async function GET(request: NextRequest) {
       id: row.id,
       title: row.title,
       category: row.category,
-      content_type: row.content_type,
       source: row.source,
       status: row.status,
       slug: row.slug,
@@ -107,7 +106,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/articles — Create a new article from the admin dashboard.
  *
- * Body: { title, content_html, category, content_type, status }
+ * Body: { title, content_html, category, status }
  *
  * Requirements: 6.1, 6.2
  */
@@ -122,7 +121,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, content_html, category, content_type, status } = body;
+    const { title, content_html, category, status } = body;
 
     if (!content_html || typeof content_html !== 'string' || !content_html.trim()) {
       return NextResponse.json(
@@ -144,10 +143,10 @@ export async function POST(request: NextRequest) {
     const slug = slugify(slugInput);
 
     const article = await queryOne<Article>(
-      `INSERT INTO articles (author_id, content_html, title, category, content_type, source, status, slug)
-       VALUES ($1, $2, $3, $4, $5, 'dashboard', $6, $7)
+      `INSERT INTO articles (author_id, content_html, title, category, source, status, slug)
+       VALUES ($1, $2, $3, $4, 'dashboard', $5, $6)
        RETURNING *`,
-      [admin.id, content_html, title?.trim() || null, category, content_type || 'short', status || 'published', slug],
+      [admin.id, content_html, title?.trim() || null, category, status || 'published', slug],
     );
 
     if (!article) {

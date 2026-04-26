@@ -6,7 +6,6 @@ export interface ArticleCardData {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   created_at: string;
   author_name: string | null;

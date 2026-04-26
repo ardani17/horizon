@@ -17,7 +17,6 @@ interface ArticleRow {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   status: string;
   created_at: Date;
@@ -39,7 +38,6 @@ interface ArticleDetail {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   created_at: string;
   author_name: string | null;
@@ -51,7 +49,7 @@ interface ArticleDetail {
 async function getArticleBySlug(slug: string): Promise<ArticleDetail | null> {
   try {
     const article = await queryOne<ArticleRow>(
-      `SELECT a.id, a.title, a.content_html, a.category, a.content_type,
+      `SELECT a.id, a.title, a.content_html, a.category,
               a.slug, a.status, a.created_at, u.username AS author_name
        FROM articles a
        LEFT JOIN users u ON a.author_id = u.id
@@ -81,7 +79,6 @@ async function getArticleBySlug(slug: string): Promise<ArticleDetail | null> {
       title: article.title,
       content_html: article.content_html,
       category: article.category,
-      content_type: article.content_type,
       slug: article.slug,
       created_at:
         article.created_at instanceof Date
@@ -174,7 +171,6 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
-  const isLong = article.content_type === 'long';
   const displayTitle =
     article.title ||
     article.content_html.replace(/<[^>]*>/g, '').trim().slice(0, 80);
@@ -214,17 +210,13 @@ export default async function ArticleDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className={styles.container}>
-        <div
-          className={`${styles.content} ${isLong ? styles.longLayout : styles.shortLayout}`}
-        >
+        <div className={styles.content}>
           <Link href="/" className={styles.backLink}>
             ← Kembali ke Feed
           </Link>
 
           <article className={styles.article}>
-            <h1
-              className={`${styles.title} ${isLong ? styles.longTitle : ''}`}
-            >
+            <h1 className={styles.title}>
               {displayTitle}
             </h1>
 
@@ -233,12 +225,10 @@ export default async function ArticleDetailPage({
               createdAt={article.created_at}
               contentHtml={article.content_html}
               category={article.category}
-              contentType={article.content_type}
             />
 
             <ArticleContent
               html={article.content_html}
-              contentType={article.content_type}
             />
 
             {article.media.length > 0 && (

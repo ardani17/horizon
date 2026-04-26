@@ -4,7 +4,7 @@
 
 import type { CommandHandler } from '../commands/types';
 import type { BotContext } from '../middleware/types';
-import { parseHashtags, mapHashtagToCategory } from '../utils/hashtag';
+import { parseHashtags, mapHashtagToCategory, stripRecognizedHashtags } from '../utils/hashtag';
 import { textToHtml } from '../../../shared/utils/textToHtml';
 import { slugify, extractFirstWords } from '../../../shared/utils/slugify';
 import type { ArticleCategory, SourceType } from '../../../shared/types/index';
@@ -34,7 +34,6 @@ export interface PublishHandlerDeps {
       content_html: string;
       title: string | null;
       category: ArticleCategory;
-      content_type: string;
       source: string;
       status: string;
       slug: string;
@@ -131,8 +130,11 @@ export class PublishHandler implements CommandHandler {
     const hashtags = parseHashtags(text);
     const category = mapHashtagToCategory(hashtags);
 
-    // Convert text to HTML
-    const contentHtml = textToHtml(text);
+    // Strip recognized hashtags before converting to HTML (Requirement 10.5)
+    const cleanedText = stripRecognizedHashtags(text);
+
+    // Convert cleaned text to HTML
+    const contentHtml = textToHtml(cleanedText);
 
     // Generate slug from first 8 words
     const slugInput = extractFirstWords(text);
@@ -154,7 +156,6 @@ export class PublishHandler implements CommandHandler {
             content_html: contentHtml,
             title,
             category,
-            content_type: 'short',
             source: 'telegram',
             status: 'published',
             slug,

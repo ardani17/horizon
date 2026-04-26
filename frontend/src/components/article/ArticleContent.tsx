@@ -2,17 +2,13 @@ import styles from './ArticleContent.module.css';
 
 interface ArticleContentProps {
   html: string;
-  contentType: string;
 }
 
-/** Renders article HTML content with appropriate styling based on content type */
-export function ArticleContent({ html, contentType }: ArticleContentProps) {
-  const layoutClass =
-    contentType === 'long' ? styles.longContent : styles.shortContent;
-
+/** Renders article HTML content */
+export function ArticleContent({ html }: ArticleContentProps) {
   return (
     <div
-      className={`${styles.content} ${layoutClass}`}
+      className={styles.content}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

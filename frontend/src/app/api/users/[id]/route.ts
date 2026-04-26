@@ -121,7 +121,6 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           id: a.id,
           title: a.title,
           category: a.category,
-          content_type: a.content_type,
           status: a.status,
           slug: a.slug,
           media_count: parseInt(String((a as unknown as { media_count: string }).media_count), 10),

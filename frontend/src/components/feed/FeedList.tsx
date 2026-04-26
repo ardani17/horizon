@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { CategoryTabs, type CategoryFilter } from './CategoryTabs';
 import { ArticleCard, type ArticleCardData } from './ArticleCard';
-import { ArticleLongCard } from './ArticleLongCard';
 import { Pagination } from '@/components/ui/Pagination';
 import styles from './FeedList.module.css';
 
@@ -46,13 +45,9 @@ export function FeedList({ articles }: FeedListProps) {
         </div>
       ) : (
         <div className={styles.articles}>
-          {paged.map((article) =>
-            article.content_type === 'long' ? (
-              <ArticleLongCard key={article.id} article={article} />
-            ) : (
-              <ArticleCard key={article.id} article={article} />
-            )
-          )}
+          {paged.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
         </div>
       )}
 

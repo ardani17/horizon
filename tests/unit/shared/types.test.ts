@@ -3,7 +3,6 @@ import {
   ArticleCategory,
   UserRole,
   ArticleStatus,
-  ContentType,
   ArticleSource,
   TransactionType,
   SourceType,
@@ -50,12 +49,6 @@ describe('Shared Types — Enums and Constants', () => {
     expect(ArticleStatus.HIDDEN).toBe('hidden');
     expect(ArticleStatus.DRAFT).toBe('draft');
     expect(Object.keys(ArticleStatus)).toHaveLength(3);
-  });
-
-  it('ContentType has short and long', () => {
-    expect(ContentType.SHORT).toBe('short');
-    expect(ContentType.LONG).toBe('long');
-    expect(Object.keys(ContentType)).toHaveLength(2);
   });
 
   it('ArticleSource has telegram and dashboard', () => {
@@ -172,14 +165,12 @@ describe('Shared Types — Entity Interface Shapes', () => {
       content_html: '<p>Hello</p>',
       title: 'Test Article',
       category: ArticleCategory.TRADING,
-      content_type: ContentType.SHORT,
       source: ArticleSource.TELEGRAM,
       status: ArticleStatus.PUBLISHED,
       slug: 'test-article-abc123',
       created_at: new Date(),
     };
     expect(article.category).toBe('trading');
-    expect(article.content_type).toBe('short');
     expect(article.source).toBe('telegram');
     expect(article.status).toBe('published');
   });

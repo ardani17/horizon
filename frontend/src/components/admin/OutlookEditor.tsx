@@ -7,7 +7,6 @@ export interface OutlookFormData {
   title: string;
   content_html: string;
   category: 'outlook';
-  content_type: 'long';
   status: string;
 }
 
@@ -38,7 +37,7 @@ let imageIdCounter = 0;
 /**
  * Outlook editor component with rich text HTML editing, inline image uploads,
  * and live preview. Designed specifically for Outlook (market analysis) articles
- * with fixed category "outlook" and content_type "long".
+ * with fixed category "outlook".
  *
  * Requirements: 27.5, 27.6
  */
@@ -165,7 +164,6 @@ export function OutlookEditor({
           title: title.trim(),
           content_html: contentHtml,
           category: 'outlook',
-          content_type: 'long',
           status,
         },
         images,

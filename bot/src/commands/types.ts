@@ -7,14 +7,14 @@ import type { BotContext } from '../middleware/types';
 /**
  * A command handler that can be registered with the CommandRegistry.
  *
- * Each handler defines a name (e.g., "/story", "#jurnal"), a human-readable
+ * Each handler defines a name (e.g., "/publish", "#trading"), a human-readable
  * description, a permission level, a type (command or hashtag), and an
  * execute function that processes the bot context.
  *
  * Validates: Requirements 15.1, 15.2
  */
 export interface CommandHandler {
-  /** Command or hashtag name, e.g., "/story", "#jurnal" */
+  /** Command or hashtag name, e.g., "/publish", "#trading" */
   name: string;
   /** Human-readable description */
   description: string;

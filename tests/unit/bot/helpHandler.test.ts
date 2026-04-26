@@ -84,34 +84,34 @@ describe('HelpHandler', () => {
   describe('listing commands', () => {
     it('should list a single registered command with its description', async () => {
       const commands = [
-        createMockCommand({ name: '/story', description: 'Buat cerita pendek' }),
+        createMockCommand({ name: '/publish', description: 'Publikasikan pesan' }),
       ];
       vi.mocked(listCommands).mockReturnValue(commands);
 
       await handler.execute(ctx);
 
       const replyText = vi.mocked(ctx.reply).mock.calls[0][0];
-      expect(replyText).toContain('/story');
-      expect(replyText).toContain('Buat cerita pendek');
+      expect(replyText).toContain('/publish');
+      expect(replyText).toContain('Publikasikan pesan');
     });
 
     it('should list multiple registered commands', async () => {
       const commands = [
-        createMockCommand({ name: '/story', description: 'Buat cerita pendek' }),
-        createMockCommand({ name: '/cerita', description: 'Buat cerita panjang' }),
-        createMockCommand({ name: '/publish', description: 'Publikasikan pesan (admin only)' }),
+        createMockCommand({ name: '/publish', description: 'Publikasikan pesan' }),
+        createMockCommand({ name: '/help', description: 'Tampilkan bantuan' }),
+        createMockCommand({ name: '#hashtag', description: 'Publish via hashtag' }),
       ];
       vi.mocked(listCommands).mockReturnValue(commands);
 
       await handler.execute(ctx);
 
       const replyText = vi.mocked(ctx.reply).mock.calls[0][0];
-      expect(replyText).toContain('/story');
-      expect(replyText).toContain('/cerita');
       expect(replyText).toContain('/publish');
-      expect(replyText).toContain('Buat cerita pendek');
-      expect(replyText).toContain('Buat cerita panjang');
-      expect(replyText).toContain('Publikasikan pesan (admin only)');
+      expect(replyText).toContain('/help');
+      expect(replyText).toContain('#hashtag');
+      expect(replyText).toContain('Publikasikan pesan');
+      expect(replyText).toContain('Tampilkan bantuan');
+      expect(replyText).toContain('Publish via hashtag');
     });
 
     it('should include hashtag handlers in the list', async () => {
@@ -130,19 +130,19 @@ describe('HelpHandler', () => {
 
     it('should format each command as "name — description"', async () => {
       const commands = [
-        createMockCommand({ name: '/story', description: 'Buat cerita pendek' }),
+        createMockCommand({ name: '/publish', description: 'Publikasikan pesan' }),
       ];
       vi.mocked(listCommands).mockReturnValue(commands);
 
       await handler.execute(ctx);
 
       const replyText = vi.mocked(ctx.reply).mock.calls[0][0];
-      expect(replyText).toContain('/story — Buat cerita pendek');
+      expect(replyText).toContain('/publish — Publikasikan pesan');
     });
 
     it('should include a header line in the reply', async () => {
       const commands = [
-        createMockCommand({ name: '/story', description: 'Buat cerita pendek' }),
+        createMockCommand({ name: '/publish', description: 'Publikasikan pesan' }),
       ];
       vi.mocked(listCommands).mockReturnValue(commands);
 
@@ -164,8 +164,8 @@ describe('HelpHandler', () => {
   describe('reply behavior', () => {
     it('should call reply exactly once', async () => {
       const commands = [
-        createMockCommand({ name: '/story', description: 'Buat cerita pendek' }),
-        createMockCommand({ name: '/cerita', description: 'Buat cerita panjang' }),
+        createMockCommand({ name: '/publish', description: 'Publikasikan pesan' }),
+        createMockCommand({ name: '/help', description: 'Tampilkan bantuan' }),
       ];
       vi.mocked(listCommands).mockReturnValue(commands);
 

@@ -70,7 +70,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
  * PUT /api/articles/[id] — Update an article.
  * Admin-only endpoint.
  *
- * Body: { title, content_html, category, content_type, status }
+ * Body: { title, content_html, category, status }
  *
  * Requirements: 5.2, 5.3
  */
@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     const body = await request.json();
-    const { title, content_html, category, content_type, status } = body;
+    const { title, content_html, category, status } = body;
 
     // Build update fields dynamically
     const updates: string[] = [];
@@ -135,12 +135,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       }
       updates.push(`category = $${paramIndex}`);
       values.push(category);
-      paramIndex++;
-    }
-
-    if (content_type !== undefined) {
-      updates.push(`content_type = $${paramIndex}`);
-      values.push(content_type);
       paramIndex++;
     }
 

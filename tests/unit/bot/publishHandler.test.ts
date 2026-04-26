@@ -151,20 +151,9 @@ describe('PublishHandler', () => {
       expect(call[0].category).toBe('general');
     });
 
-    it('should map #jurnal to "trading" category', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'My trading journal #jurnal for today',
-      });
-
-      await handler.execute(ctx);
-
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].category).toBe('trading');
-    });
-
     it('should map #trading to "trading" category', async () => {
       ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Analysis of the market #trading',
+        text: 'My trading journal #trading for today',
       });
 
       await handler.execute(ctx);
@@ -183,17 +172,6 @@ describe('PublishHandler', () => {
       const call = vi.mocked(deps.insertArticle).mock.calls[0];
       expect(call[0].category).toBe('life_story');
     });
-
-    it('should map #kehidupan to "life_story" category', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Reflections on life #kehidupan',
-      });
-
-      await handler.execute(ctx);
-
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].category).toBe('life_story');
-    });
   });
 
   describe('article creation from replied message', () => {
@@ -205,7 +183,6 @@ describe('PublishHandler', () => {
           author_id: 'admin-uuid-123',
           source: 'telegram',
           status: 'published',
-          content_type: 'short',
         }),
         'mock-client',
       );
@@ -272,7 +249,7 @@ describe('PublishHandler', () => {
 
     it('should use correct source_type for trading category', async () => {
       ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Trading journal #jurnal',
+        text: 'Trading journal #trading',
       });
 
       await handler.execute(ctx);

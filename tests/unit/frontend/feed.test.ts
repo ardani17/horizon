@@ -62,7 +62,6 @@ interface ArticleCardData {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   created_at: string;
   author_name: string | null;
@@ -86,7 +85,6 @@ function makeArticle(overrides: Partial<ArticleCardData> = {}): ArticleCardData 
     title: 'Test Article',
     content_html: '<p>Test content</p>',
     category: 'trading',
-    content_type: 'short',
     slug: 'test-article-abc123',
     created_at: '2024-01-15T10:00:00Z',
     author_name: 'TestUser',

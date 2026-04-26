@@ -5,7 +5,6 @@ interface ArticleMetaProps {
   createdAt: string;
   contentHtml: string;
   category: string;
-  contentType: string;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -37,7 +36,6 @@ export function ArticleMeta({
   createdAt,
   contentHtml,
   category,
-  contentType,
 }: ArticleMetaProps) {
   const readTime = estimateReadTime(contentHtml);
 
@@ -47,9 +45,6 @@ export function ArticleMeta({
         <span className={styles.category}>
           {categoryLabels[category] || category}
         </span>
-        {contentType === 'long' && (
-          <span className={styles.longBadge}>Long Read</span>
-        )}
       </div>
       <div className={styles.details}>
         <span className={styles.author}>

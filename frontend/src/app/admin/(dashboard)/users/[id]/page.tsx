@@ -31,7 +31,6 @@ interface ArticleItem {
   id: string;
   title: string | null;
   category: string;
-  content_type: string;
   status: string;
   slug: string;
   media_count: number;

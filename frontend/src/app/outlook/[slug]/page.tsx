@@ -14,7 +14,6 @@ interface ArticleRow {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   status: string;
   created_at: Date;
@@ -36,7 +35,6 @@ interface OutlookDetail {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   slug: string;
   created_at: string;
   author_name: string | null;
@@ -48,7 +46,7 @@ interface OutlookDetail {
 async function getOutlookBySlug(slug: string): Promise<OutlookDetail | null> {
   try {
     const article = await queryOne<ArticleRow>(
-      `SELECT a.id, a.title, a.content_html, a.category, a.content_type,
+      `SELECT a.id, a.title, a.content_html, a.category,
               a.slug, a.status, a.created_at, u.username AS author_name
        FROM articles a
        LEFT JOIN users u ON a.author_id = u.id
@@ -78,7 +76,6 @@ async function getOutlookBySlug(slug: string): Promise<OutlookDetail | null> {
       title: article.title,
       content_html: article.content_html,
       category: article.category,
-      content_type: article.content_type,
       slug: article.slug,
       created_at:
         article.created_at instanceof Date
@@ -230,7 +227,6 @@ export default async function OutlookDetailPage({
               createdAt={article.created_at}
               contentHtml={article.content_html}
               category={article.category}
-              contentType={article.content_type}
             />
 
             {coverImage && (

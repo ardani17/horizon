@@ -29,7 +29,7 @@ function createMockContext(overrides: Partial<BotContext> = {}): BotContext {
       from: { id: 12345, is_bot: false, first_name: 'Test' },
       chat: { id: -100123, type: 'supergroup' },
       date: Math.floor(Date.now() / 1000),
-      text: '#jurnal My trading journal entry for today',
+      text: '#trading My trading journal entry for today',
     },
     user: createMockUser(),
     reply: vi.fn().mockResolvedValue(undefined),
@@ -73,22 +73,6 @@ describe('HashtagHandler', () => {
   });
 
   describe('article creation', () => {
-    it('should create an article with category "trading" for #jurnal', async () => {
-      ctx.message.text = '#jurnal My trading journal entry';
-      await handler.execute(ctx);
-
-      expect(deps.insertArticle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          author_id: 'user-uuid-123',
-          category: 'trading',
-          content_type: 'short',
-          source: 'telegram',
-          status: 'published',
-        }),
-        'mock-client',
-      );
-    });
-
     it('should create an article with category "trading" for #trading', async () => {
       ctx.message.text = '#trading EURUSD analysis for the week';
       await handler.execute(ctx);
@@ -109,16 +93,6 @@ describe('HashtagHandler', () => {
       );
     });
 
-    it('should create an article with category "life_story" for #kehidupan', async () => {
-      ctx.message.text = '#kehidupan Refleksi pagi ini tentang hidup';
-      await handler.execute(ctx);
-
-      expect(deps.insertArticle).toHaveBeenCalledWith(
-        expect.objectContaining({ category: 'life_story' }),
-        'mock-client',
-      );
-    });
-
     it('should create an article with category "general" when no recognized hashtag', async () => {
       ctx.message.text = '#random Some random content here';
       await handler.execute(ctx);
@@ -130,7 +104,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should convert text to HTML for content_html', async () => {
-      ctx.message.text = '#jurnal Hello world';
+      ctx.message.text = '#trading Hello world';
       await handler.execute(ctx);
 
       const call = vi.mocked(deps.insertArticle).mock.calls[0];
@@ -139,7 +113,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should generate a slug from the first 8 words', async () => {
-      ctx.message.text = '#jurnal My trading journal entry for today is great';
+      ctx.message.text = '#trading My trading journal entry for today is great';
       await handler.execute(ctx);
 
       const call = vi.mocked(deps.insertArticle).mock.calls[0];
@@ -148,7 +122,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should set title from first 8 words of text', async () => {
-      ctx.message.text = '#jurnal My trading journal entry for today is great and wonderful';
+      ctx.message.text = '#trading My trading journal entry for today is great and wonderful';
       await handler.execute(ctx);
 
       const call = vi.mocked(deps.insertArticle).mock.calls[0];
@@ -170,7 +144,7 @@ describe('HashtagHandler', () => {
 
   describe('credit award', () => {
     it('should award credit based on category settings', async () => {
-      ctx.message.text = '#jurnal Trading journal';
+      ctx.message.text = '#trading Trading journal';
       vi.mocked(deps.getCreditReward).mockResolvedValue({ credit_reward: 10, is_active: true });
 
       await handler.execute(ctx);
@@ -404,7 +378,7 @@ describe('HashtagHandler', () => {
 
   describe('reply messages', () => {
     it('should send success reply with category after publishing', async () => {
-      ctx.message.text = '#jurnal My journal entry';
+      ctx.message.text = '#trading My journal entry';
       await handler.execute(ctx);
 
       expect(ctx.reply).toHaveBeenCalledWith(

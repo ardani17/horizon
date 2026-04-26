@@ -14,7 +14,6 @@ export interface ArticleFormData {
   title: string;
   content_html: string;
   category: string;
-  content_type: string;
   status: string;
 }
 
@@ -37,11 +36,6 @@ const CATEGORIES = [
   { value: 'trading', label: 'Trading' },
   { value: 'life_story', label: 'Life Story' },
   { value: 'general', label: 'General' },
-];
-
-const CONTENT_TYPES = [
-  { value: 'short', label: 'Short' },
-  { value: 'long', label: 'Long' },
 ];
 
 const STATUSES = [
@@ -68,7 +62,6 @@ export function ArticleEditor({
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [contentHtml, setContentHtml] = useState(initialData?.content_html ?? '');
   const [category, setCategory] = useState(initialData?.category ?? 'general');
-  const [contentType, setContentType] = useState(initialData?.content_type ?? 'short');
   const [status, setStatus] = useState(initialData?.status ?? 'published');
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
   const [media, setMedia] = useState<MediaAttachment[]>(initialMedia);
@@ -177,7 +170,6 @@ export function ArticleEditor({
           title: title.trim(),
           content_html: contentHtml,
           category,
-          content_type: contentType,
           status,
         },
         newFiles,
@@ -217,22 +209,6 @@ export function ArticleEditor({
             {CATEGORIES.map((cat) => (
               <option key={cat.value} value={cat.value}>
                 {cat.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="article-content-type">
-            Tipe Konten
-          </label>
-          <select
-            id="article-content-type"
-            value={contentType}
-            onChange={(e) => setContentType(e.target.value)}
-          >
-            {CONTENT_TYPES.map((ct) => (
-              <option key={ct.value} value={ct.value}>
-                {ct.label}
               </option>
             ))}
           </select>

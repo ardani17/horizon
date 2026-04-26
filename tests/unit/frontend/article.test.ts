@@ -79,37 +79,6 @@ describe('formatDate (article)', () => {
   });
 });
 
-describe('content type layout differentiation', () => {
-  // Test the logic that determines layout based on content_type
-  function getLayoutClass(contentType: string): string {
-    return contentType === 'long' ? 'longLayout' : 'shortLayout';
-  }
-
-  function getTitleClass(contentType: string): string {
-    return contentType === 'long' ? 'longTitle' : '';
-  }
-
-  it('returns longLayout for long content type', () => {
-    expect(getLayoutClass('long')).toBe('longLayout');
-  });
-
-  it('returns shortLayout for short content type', () => {
-    expect(getLayoutClass('short')).toBe('shortLayout');
-  });
-
-  it('returns shortLayout for unknown content type', () => {
-    expect(getLayoutClass('unknown')).toBe('shortLayout');
-  });
-
-  it('returns longTitle class for long content type', () => {
-    expect(getTitleClass('long')).toBe('longTitle');
-  });
-
-  it('returns empty string for short content type title', () => {
-    expect(getTitleClass('short')).toBe('');
-  });
-});
-
 describe('article display title fallback', () => {
   function getDisplayTitle(title: string | null, contentHtml: string): string {
     return title || contentHtml.replace(/<[^>]*>/g, '').trim().slice(0, 80);

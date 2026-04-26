@@ -4,7 +4,7 @@
 
 import type { CommandHandler } from '../commands/types';
 import type { BotContext } from '../middleware/types';
-import { parseHashtags, mapHashtagToCategory } from '../utils/hashtag';
+import { parseHashtags, mapHashtagToCategory, stripRecognizedHashtags } from '../utils/hashtag';
 import { textToHtml } from '../../../shared/utils/textToHtml';
 import { slugify, extractFirstWords } from '../../../shared/utils/slugify';
 import type { ArticleCategory, SourceType } from '../../../shared/types/index';
@@ -34,7 +34,6 @@ export interface HashtagHandlerDeps {
       content_html: string;
       title: string | null;
       category: ArticleCategory;
-      content_type: string;
       source: string;
       status: string;
       slug: string;
@@ -90,8 +89,8 @@ export interface HashtagHandlerDeps {
 /**
  * Hashtag handler for the Telegram Bot.
  *
- * Triggered when a message contains a recognized hashtag (#jurnal, #trading,
- * #cerita, #kehidupan). Parses the hashtag to determine the article category,
+ * Triggered when a message contains a recognized hashtag (#trading, #cerita,
+ * #general). Parses the hashtag to determine the article category,
  * converts the message text to HTML, generates a slug, and atomically inserts
  * the article and awards credit to the author.
  *
@@ -99,7 +98,7 @@ export interface HashtagHandlerDeps {
  */
 export class HashtagHandler implements CommandHandler {
   readonly name = '#hashtag';
-  readonly description = 'Publish article via hashtag (#jurnal, #trading, #cerita, #kehidupan)';
+  readonly description = 'Publish article via hashtag (#trading, #cerita, #general)';
   readonly permission = 'member' as const;
   readonly type = 'hashtag' as const;
 
@@ -116,8 +115,9 @@ export class HashtagHandler implements CommandHandler {
     const hashtags = parseHashtags(text);
     const category = mapHashtagToCategory(hashtags);
 
-    // Step 2: Convert text to HTML
-    const contentHtml = textToHtml(text);
+    // Step 2: Strip recognized hashtags and convert to HTML
+    const cleanedText = stripRecognizedHashtags(text);
+    const contentHtml = textToHtml(cleanedText);
 
     // Step 3: Generate slug from first 8 words
     const slugInput = extractFirstWords(text);
@@ -139,7 +139,6 @@ export class HashtagHandler implements CommandHandler {
             content_html: contentHtml,
             title,
             category,
-            content_type: 'short',
             source: 'telegram',
             status: 'published',
             slug,

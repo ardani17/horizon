@@ -11,7 +11,6 @@ interface ArticleListItem {
   id: string;
   title: string | null;
   category: string;
-  content_type: string;
   source: string;
   status: string;
   slug: string;

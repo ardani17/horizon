@@ -18,7 +18,6 @@ interface ArticleData {
   title: string | null;
   content_html: string;
   category: string;
-  content_type: string;
   status: string;
   slug: string;
   source: string;
@@ -162,7 +161,6 @@ export default function AdminEditArticlePage() {
             title: article.title || '',
             content_html: article.content_html,
             category: article.category,
-            content_type: article.content_type,
             status: article.status,
           }}
           initialMedia={initialMedia}
