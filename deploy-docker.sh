@@ -31,6 +31,21 @@ banner() {
     echo ""
 }
 
+# ── Detect docker compose command ───────────
+
+detect_compose() {
+    if docker compose version >/dev/null 2>&1; then
+        COMPOSE="docker compose"
+    elif docker-compose version >/dev/null 2>&1; then
+        COMPOSE="docker-compose"
+    else
+        err "Docker Compose tidak ditemukan!"
+        echo "  Install Docker Compose: https://docs.docker.com/compose/install/"
+        exit 1
+    fi
+    ok "Menggunakan: $COMPOSE"
+}
+
 # ── 1. validate_env ─────────────────────────
 
 validate_env() {
@@ -185,7 +200,7 @@ generate_self_signed() {
 build_and_start() {
     info "Building Docker images (--no-cache) ..."
 
-    if ! docker compose build --no-cache; then
+    if ! $COMPOSE build --no-cache; then
         err "Docker build gagal! Periksa log di atas untuk detail error."
         exit 1
     fi
@@ -193,7 +208,7 @@ build_and_start() {
     ok "Build selesai."
 
     info "Menjalankan semua service ..."
-    docker compose up -d
+    $COMPOSE up -d
 
     ok "Semua container dimulai."
 }
@@ -215,7 +230,7 @@ request_letsencrypt() {
 
     info "Meminta sertifikat Let's Encrypt untuk ${DOMAIN} ..."
 
-    if docker compose run --rm certbot certonly \
+    if $COMPOSE run --rm certbot certonly \
         --webroot \
         --webroot-path=/var/www/certbot \
         --email "${SSL_EMAIL}" \
@@ -299,6 +314,7 @@ health_check() {
 
 main() {
     banner
+    detect_compose
     validate_env
     check_required_vars
     auto_construct_vars
