@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
+/** Always fetch fresh data */
+export const dynamic = 'force-dynamic';
+
 interface OutlookRow {
   id: string;
   title: string | null;

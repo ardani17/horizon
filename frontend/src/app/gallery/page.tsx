@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
+/** Always fetch fresh data — media is uploaded frequently via Telegram */
+export const dynamic = 'force-dynamic';
+
 const INITIAL_LIMIT = 18;
 
 interface MediaRow {

@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
+/** Always fetch fresh data — articles are created frequently via Telegram */
+export const dynamic = 'force-dynamic';
+
 interface ArticleRow {
   id: string;
   title: string | null;
