@@ -73,7 +73,6 @@ check_required_vars() {
 
     local required_vars=(
         DOMAIN
-        SSL_EMAIL
         POSTGRES_DB
         POSTGRES_USER
         POSTGRES_PASSWORD
@@ -145,18 +144,10 @@ set_defaults() {
 
     export FRONTEND_PORT="${FRONTEND_PORT:-3000}"
     export BOT_PORT="${BOT_PORT:-4000}"
-    export NGINX_HTTP_PORT="${NGINX_HTTP_PORT:-80}"
-    export NGINX_HTTPS_PORT="${NGINX_HTTPS_PORT:-443}"
-
-    export NGINX_RATE_LIMIT_GENERAL="${NGINX_RATE_LIMIT_GENERAL:-30r/s}"
-    export NGINX_RATE_LIMIT_API="${NGINX_RATE_LIMIT_API:-10r/s}"
-    export NGINX_RATE_LIMIT_WEBHOOK="${NGINX_RATE_LIMIT_WEBHOOK:-5r/s}"
 
     export DB_DATA_DIR="${DB_DATA_DIR:-./data/postgres}"
 
     ok "Defaults: FRONTEND_PORT=${FRONTEND_PORT}, BOT_PORT=${BOT_PORT}"
-    ok "Defaults: NGINX_HTTP_PORT=${NGINX_HTTP_PORT}, NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT}"
-    ok "Defaults: Rate limits — general=${NGINX_RATE_LIMIT_GENERAL}, api=${NGINX_RATE_LIMIT_API}, webhook=${NGINX_RATE_LIMIT_WEBHOOK}"
     ok "Defaults: DB_DATA_DIR=${DB_DATA_DIR}"
 }
 
@@ -166,36 +157,11 @@ setup_directories() {
     info "Membuat direktori yang diperlukan ..."
 
     mkdir -p "${DB_DATA_DIR}"
-    mkdir -p ./certbot/conf
-    mkdir -p ./certbot/www
-    mkdir -p "./certbot/conf/live/${DOMAIN}"
 
-    ok "Direktori siap: ${DB_DATA_DIR}, ./certbot/conf, ./certbot/www"
+    ok "Direktori siap: ${DB_DATA_DIR}"
 }
 
-# ── 6. generate_self_signed ─────────────────
-
-generate_self_signed() {
-    local cert_path="./certbot/conf/live/${DOMAIN}/fullchain.pem"
-    local key_path="./certbot/conf/live/${DOMAIN}/privkey.pem"
-
-    if [ -f "$cert_path" ]; then
-        ok "Sertifikat sudah ada di ${cert_path} — skip generate."
-        return
-    fi
-
-    info "Membuat sertifikat self-signed sementara untuk ${DOMAIN} ..."
-
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout "$key_path" \
-        -out "$cert_path" \
-        -subj "/CN=${DOMAIN}/O=Horizon Trader/C=ID" \
-        2>/dev/null
-
-    ok "Sertifikat self-signed berhasil dibuat."
-}
-
-# ── 7. build_and_start ──────────────────────
+# ── 6. build_and_start ──────────────────────
 
 build_and_start() {
     info "Building Docker images (--no-cache) ..."
@@ -213,53 +179,15 @@ build_and_start() {
     ok "Semua container dimulai."
 }
 
-# ── 8. request_letsencrypt ──────────────────
-
-request_letsencrypt() {
-    local cert_path="./certbot/conf/live/${DOMAIN}/fullchain.pem"
-
-    # Cek apakah sertifikat yang ada adalah Let's Encrypt (bukan self-signed)
-    if [ -f "$cert_path" ]; then
-        local issuer
-        issuer=$(openssl x509 -in "$cert_path" -noout -issuer 2>/dev/null || true)
-        if echo "$issuer" | grep -qi "Let's Encrypt"; then
-            ok "Sertifikat Let's Encrypt sudah ada — skip request."
-            return
-        fi
-    fi
-
-    info "Meminta sertifikat Let's Encrypt untuk ${DOMAIN} ..."
-
-    if $COMPOSE run --rm certbot certonly \
-        --webroot \
-        --webroot-path=/var/www/certbot \
-        --email "${SSL_EMAIL}" \
-        --agree-tos \
-        --no-eff-email \
-        -d "${DOMAIN}"; then
-
-        ok "Sertifikat Let's Encrypt berhasil diperoleh!"
-
-        info "Reload Nginx untuk menggunakan sertifikat baru ..."
-        docker exec horizon-nginx nginx -s reload
-        ok "Nginx berhasil di-reload."
-    else
-        warn "Gagal memperoleh sertifikat Let's Encrypt."
-        warn "Site tetap berjalan dengan sertifikat self-signed."
-        warn "Pastikan DNS A record untuk ${DOMAIN} sudah mengarah ke IP server ini,"
-        warn "lalu jalankan ulang script ini."
-    fi
-}
-
-# ── 9. health_check ─────────────────────────
+# ── 7. health_check ─────────────────────────
 
 health_check() {
     echo ""
     info "Menjalankan health check ..."
     echo ""
 
-    local services=("db" "bot" "frontend" "nginx")
-    local containers=("horizon-db" "horizon-bot" "horizon-frontend" "horizon-nginx")
+    local services=("db" "bot" "frontend")
+    local containers=("horizon-db" "horizon-bot" "horizon-frontend")
     local max_retries=30
     local all_healthy=true
 
@@ -301,6 +229,7 @@ health_check() {
 
     echo ""
     echo "  Langkah selanjutnya:"
+    echo "  0. Pastikan host reverse proxy sudah berjalan (lihat proxy/README.md)"
     echo "  1. Pastikan DNS A record untuk ${DOMAIN} mengarah ke IP server ini"
     echo "  2. Verifikasi HTTPS: https://${DOMAIN}"
     echo "  3. Cek admin panel: https://${DOMAIN}/admin"
@@ -320,9 +249,7 @@ main() {
     auto_construct_vars
     set_defaults
     setup_directories
-    generate_self_signed
     build_and_start
-    request_letsencrypt
     health_check
 }
 
