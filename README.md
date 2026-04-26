@@ -32,42 +32,37 @@ Kirim pesan di grup Telegram dengan hashtag berikut untuk auto-publish artikel k
 
 | Hashtag | Kategori | Kredit |
 |---------|----------|--------|
-| `#jurnal` | Trading | 10 |
 | `#trading` | Trading | 10 |
 | `#cerita` | Life Story | 5 |
-| `#kehidupan` | Life Story | 5 |
+| `#general` | General | 3 |
+
+Setiap kategori memiliki tepat satu hashtag (1:1 mapping). Hashtag yang dikenali akan otomatis dihapus dari konten artikel yang dipublikasikan.
 
 **Contoh:**
 ```
-#jurnal Hari ini saya belajar tentang support dan resistance.
+#trading Hari ini saya belajar tentang support dan resistance.
 Ternyata penting banget untuk menentukan entry point...
 ```
 
 Bot akan otomatis:
 1. Membuat artikel di website dengan kategori **Trading**
-2. Mengupload foto/video jika ada lampiran
-3. Memberikan **10 kredit** ke akun pengirim
+2. Menghapus `#trading` dari konten artikel
+3. Mengupload foto/video jika ada lampiran
+4. Memberikan **10 kredit** ke akun pengirim
 
 ### Slash Commands
 
 | Command | Akses | Deskripsi |
 |---------|-------|-----------|
-| `/story [teks]` | Member | Buat cerita pendek (short post), kategori: life_story |
-| `/cerita [teks]` | Member | Buat cerita panjang (long-form article), kategori: life_story |
 | `/publish` | Admin | Balas pesan orang lain dengan `/publish` untuk mempublikasikannya |
 | `/help` | Semua | Tampilkan daftar command yang tersedia |
-
-**Contoh `/story`:**
-```
-/story Pengalaman pertama saya trading forex. Awalnya rugi terus, tapi setelah belajar money management akhirnya mulai profit konsisten.
-```
 
 **Contoh `/publish` (admin only):**
 ```
 [Balas pesan anggota grup]
 /publish
 ```
-Bot akan mempublikasikan pesan yang dibalas sebagai artikel. Kategori ditentukan dari hashtag di pesan asli, default ke "general".
+Bot akan mempublikasikan pesan yang dibalas sebagai artikel. Kategori ditentukan dari hashtag di pesan asli, default ke "general". Hashtag yang dikenali akan dihapus dari konten.
 
 ### Sistem Kredit
 
