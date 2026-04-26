@@ -130,6 +130,10 @@ export class HashtagHandler implements CommandHandler {
     const hasPhoto = ctx.message.photo && ctx.message.photo.length > 0;
     const hasVideo = !!ctx.message.video;
 
+    // Step 6: Determine article status based on user role
+    // Admin articles are published immediately; member articles require admin approval
+    const articleStatus = ctx.user.role === 'admin' ? 'published' : 'draft';
+
     try {
       const article = await this.deps.withTransaction(async (client) => {
         // Insert article
@@ -140,7 +144,7 @@ export class HashtagHandler implements CommandHandler {
             title,
             category,
             source: 'telegram',
-            status: 'published',
+            status: articleStatus,
             slug,
           },
           client,
@@ -191,32 +195,38 @@ export class HashtagHandler implements CommandHandler {
           }
         }
 
-        // Award credit based on category settings
-        const creditSettings = await this.deps.getCreditReward(category, client);
-        if (creditSettings && creditSettings.is_active && creditSettings.credit_reward > 0) {
-          const sourceType = CATEGORY_TO_SOURCE_TYPE[category] ?? 'article_general';
-          await this.deps.insertCreditTransaction(
-            {
-              user_id: ctx.user.id,
-              amount: creditSettings.credit_reward,
-              transaction_type: 'earned',
-              source_type: sourceType,
-              source_id: createdArticle.id,
-              description: null,
-            },
-            client,
-          );
-          await this.deps.updateCreditBalance(
-            ctx.user.id,
-            creditSettings.credit_reward,
-            client,
-          );
+        // Award credit only when article is published immediately (admin)
+        // Draft articles (member) get credit when admin approves/publishes them
+        if (articleStatus === 'published') {
+          const creditSettings = await this.deps.getCreditReward(category, client);
+          if (creditSettings && creditSettings.is_active && creditSettings.credit_reward > 0) {
+            const sourceType = CATEGORY_TO_SOURCE_TYPE[category] ?? 'article_general';
+            await this.deps.insertCreditTransaction(
+              {
+                user_id: ctx.user.id,
+                amount: creditSettings.credit_reward,
+                transaction_type: 'earned',
+                source_type: sourceType,
+                source_id: createdArticle.id,
+                description: null,
+              },
+              client,
+            );
+            await this.deps.updateCreditBalance(
+              ctx.user.id,
+              creditSettings.credit_reward,
+              client,
+            );
+          }
         }
 
         return createdArticle;
       });
 
-      await ctx.reply(`Artikel berhasil dipublikasikan! Kategori: ${category}.`);
+      const replyMessage = articleStatus === 'published'
+        ? `Artikel berhasil dipublikasikan! Kategori: ${category}.`
+        : `Artikel berhasil dikirim! Kategori: ${category}. Menunggu persetujuan admin untuk dipublikasikan.`;
+      await ctx.reply(replyMessage);
     } catch (error) {
       await ctx.reply('Gagal mempublikasikan artikel. Silakan coba lagi.');
       throw error;
