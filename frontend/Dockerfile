@@ -36,8 +36,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+
+ARG FRONTEND_PORT=3000
+ENV PORT=${FRONTEND_PORT}
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
@@ -53,6 +55,7 @@ RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
-EXPOSE 3000
+ARG FRONTEND_PORT=3000
+EXPOSE ${FRONTEND_PORT}
 
 CMD ["npx", "--workspace=frontend", "next", "start"]

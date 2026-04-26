@@ -28,6 +28,8 @@ services:
     build:
       context: .
       dockerfile: bot/Dockerfile
+      args:
+        BOT_PORT: ${BOT_PORT:-4000}
     container_name: horizon-bot
     restart: unless-stopped
     environment:
@@ -61,10 +63,13 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        FRONTEND_PORT: ${FRONTEND_PORT:-3000}
     container_name: horizon-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${FRONTEND_PORT:-3000}
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}"
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       NEXT_PUBLIC_TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME}

@@ -44,7 +44,8 @@ RUN chown -R botuser:nodejs /app
 
 USER botuser
 
-EXPOSE 4000
+ARG BOT_PORT=4000
+EXPOSE ${BOT_PORT}
 
 # Entry point is bot/dist/bot/src/index.js because rootDir is ".."
 CMD ["node", "bot/dist/bot/src/index.js"]
