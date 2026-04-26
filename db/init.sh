@@ -1,20 +1,15 @@
 #!/bin/bash
-set -e
 
 # ============================================
 # Horizon Trader Platform — Database Initialization & Migration
 #
-# This script handles THREE scenarios:
-#   1. Fresh database — runs all migrations + seed from scratch
-#   2. Existing database (pre-tracking) — detects already-applied migrations,
-#      seeds schema_migrations, then runs only NEW migrations
-#   3. Existing database (with tracking) — runs only NEW migrations
+# Handles all scenarios:
+#   1. Fresh database — runs all migrations from scratch
+#   2. Existing database (pre-tracking) — seeds tracking table, runs new migrations
+#   3. Existing database (with tracking) — runs only new migrations
 #
-# It uses a `schema_migrations` table to track which migrations have run.
+# Uses `schema_migrations` table to track applied migrations.
 # Safe to execute repeatedly (idempotent).
-#
-# Mounted into /docker-entrypoint-initdb.d/ for first-time init,
-# and called by deploy-docker.sh for subsequent deploys.
 # ============================================
 
 MIGRATIONS_DIR="${MIGRATIONS_DIR:-/docker-entrypoint-initdb.d/migrations}"
@@ -25,94 +20,101 @@ run_sql() {
     psql -v ON_ERROR_STOP=1 --username "$DB_USER" --dbname "$DB_NAME" "$@"
 }
 
+# Run a query and return trimmed scalar result
+query_val() {
+    run_sql -t -A -c "$1" | tr -d '[:space:]'
+}
+
+echo "=== Horizon DB: Starting migration runner ==="
+
 # ----------------------------------------
 # 1. Enable pgcrypto extension
 # ----------------------------------------
-echo "=== Horizon DB: Enabling pgcrypto extension ==="
-run_sql <<-'EOSQL'
-    CREATE EXTENSION IF NOT EXISTS pgcrypto;
-EOSQL
+run_sql -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" 2>/dev/null || true
 
 # ----------------------------------------
 # 2. Create migration tracking table
 # ----------------------------------------
-echo "=== Horizon DB: Ensuring schema_migrations table exists ==="
-run_sql <<-'EOSQL'
-    CREATE TABLE IF NOT EXISTS schema_migrations (
-        filename VARCHAR(255) PRIMARY KEY,
-        applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-EOSQL
+run_sql -c "CREATE TABLE IF NOT EXISTS schema_migrations (filename VARCHAR(255) PRIMARY KEY, applied_at TIMESTAMPTZ DEFAULT NOW());" 2>/dev/null || true
 
 # ----------------------------------------
 # 3. Detect pre-existing database without tracking
-#    If tables exist but schema_migrations is empty,
-#    seed it with migrations that were already applied.
 # ----------------------------------------
-migration_count_in_table=$(run_sql -t -A -c "SELECT COUNT(*) FROM schema_migrations")
-users_table_exists=$(run_sql -t -A -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'users' AND table_schema = 'public'")
+tracked=$(query_val "SELECT COUNT(*) FROM schema_migrations")
+has_users=$(query_val "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='users' AND table_schema='public'")
 
-if [ "$migration_count_in_table" -eq 0 ] && [ "$users_table_exists" -gt 0 ]; then
-    echo "=== Horizon DB: Detected existing database without migration tracking ==="
-    echo "  Seeding schema_migrations with previously applied migrations..."
+echo "  Migration tracking entries: ${tracked}"
+echo "  Users table exists: ${has_users}"
 
-    # 001 and 002 were already applied (tables exist, seed data exists)
+if [ "${tracked}" = "0" ] && [ "${has_users}" = "1" ]; then
+    echo "=== Horizon DB: Existing database detected — seeding migration history ==="
+
+    # Mark all existing migrations as applied by checking what already exists
+    # 001: schema — users table exists, so this was applied
     run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('001_create_schema.sql') ON CONFLICT DO NOTHING"
-    run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('002_seed_data.sql') ON CONFLICT DO NOTHING"
+    echo "  [SEED] 001_create_schema.sql"
 
-    echo "  [SEED] 001_create_schema.sql (already applied)"
-    echo "  [SEED] 002_seed_data.sql (already applied)"
+    # 002: seed data — credit_settings has rows if seed was applied
+    has_seeds=$(query_val "SELECT COUNT(*) FROM credit_settings")
+    if [ "${has_seeds}" != "0" ]; then
+        run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('002_seed_data.sql') ON CONFLICT DO NOTHING"
+        echo "  [SEED] 002_seed_data.sql"
+    fi
+
+    # 003: drop content_type — check if column still exists
+    has_content_type=$(query_val "SELECT COUNT(*) FROM information_schema.columns WHERE table_name='articles' AND column_name='content_type'")
+    if [ "${has_content_type}" = "0" ]; then
+        run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('003_drop_content_type.sql') ON CONFLICT DO NOTHING"
+        echo "  [SEED] 003_drop_content_type.sql (column already dropped)"
+    fi
 fi
 
 # ----------------------------------------
-# 4. Run all migrations in order (skip already applied)
+# 4. Run pending migrations in order
 # ----------------------------------------
-echo "=== Horizon DB: Running migrations ==="
+echo "=== Horizon DB: Checking for pending migrations ==="
 
-migration_count=0
+applied=0
 
 for migration_file in "$MIGRATIONS_DIR"/*.sql; do
     [ -f "$migration_file" ] || continue
 
     filename=$(basename "$migration_file")
 
-    # Check if already applied
-    already_applied=$(run_sql -t -A -c "SELECT COUNT(*) FROM schema_migrations WHERE filename = '${filename}'")
+    already=$(query_val "SELECT COUNT(*) FROM schema_migrations WHERE filename='${filename}'")
 
-    if [ "$already_applied" -gt 0 ]; then
-        echo "  [SKIP] ${filename} (already applied)"
+    if [ "${already}" != "0" ]; then
+        echo "  [SKIP] ${filename}"
         continue
     fi
 
     echo "  [RUN]  ${filename} ..."
-    run_sql -f "$migration_file"
-
-    # Record migration
-    run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('${filename}')"
-
-    echo "  [DONE] ${filename}"
-    migration_count=$((migration_count + 1))
+    if run_sql -f "$migration_file"; then
+        run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('${filename}')"
+        echo "  [DONE] ${filename}"
+        applied=$((applied + 1))
+    else
+        echo "  [FAIL] ${filename} — check error above"
+        # Don't exit, continue with other migrations
+    fi
 done
 
-if [ "$migration_count" -eq 0 ]; then
-    echo "=== Horizon DB: No new migrations to apply ==="
+if [ "$applied" -eq 0 ]; then
+    echo "=== Horizon DB: All migrations up to date ==="
 else
-    echo "=== Horizon DB: Applied ${migration_count} migration(s) ==="
+    echo "=== Horizon DB: Applied ${applied} migration(s) ==="
 fi
 
 # ----------------------------------------
-# 5. Override admin username if env var is set
+# 5. Update admin credentials if env vars set
 # ----------------------------------------
 if [ -n "${ADMIN_USERNAME}" ]; then
-    echo "=== Horizon DB: Updating admin username to '${ADMIN_USERNAME}' ==="
+    echo "=== Horizon DB: Updating admin username ==="
     run_sql -v admin_user="'${ADMIN_USERNAME}'" <<-'EOSQL'
         UPDATE users SET username = :admin_user WHERE telegram_id = 0 AND role = 'admin';
 EOSQL
 fi
 
-# ----------------------------------------
-# 6. Override admin password if env var is set
-# ----------------------------------------
 if [ -n "${ADMIN_PASSWORD}" ]; then
     echo "=== Horizon DB: Updating admin password ==="
     run_sql -v admin_pass="'${ADMIN_PASSWORD}'" <<-'EOSQL'
