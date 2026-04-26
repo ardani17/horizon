@@ -15,7 +15,7 @@ export function Navbar() {
     <header className={styles.header}>
       <nav className={styles.nav} aria-label="Navigasi utama">
         <Link href="/" className={styles.logo}>
-          <Logo variant="compact" height={28} />
+          <Logo variant="standard" height={28} />
         </Link>
 
         <ul className={styles.navList} role="list">

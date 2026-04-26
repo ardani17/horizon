@@ -10,8 +10,8 @@ interface LogoProps {
   className?: string;
   /** Alt text override */
   alt?: string;
-  /** Variant: 'full' shows tagline version, 'compact' shows no-tagline version, 'atom' shows atom icon */
-  variant?: 'full' | 'compact' | 'atom';
+  /** Variant: 'full' shows tagline version, 'compact' shows no-tagline version, 'standard' shows standard logo, 'atom' shows atom icon */
+  variant?: 'full' | 'compact' | 'standard' | 'atom';
 }
 
 const logoMap = {
@@ -22,6 +22,10 @@ const logoMap = {
   compact: {
     dark: '/images/logo/Logo-Horizon-big-No-tag-line-white_10.png',
     light: '/images/logo/Logo-Horizon-big-No-tag-line_9.png',
+  },
+  standard: {
+    dark: '/images/logo/Logo-Horizon-White-05-05.png',
+    light: '/images/logo/Logo-Horizon-Black-06.png',
   },
   atom: {
     dark: '/images/logo/Logo-Horizon-Atom-Online-White_8.png',
