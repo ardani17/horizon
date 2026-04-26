@@ -2,6 +2,7 @@ import Link from 'next/link';
 import styles from './Navbar.module.css';
 import { MobileMenu } from './MobileMenu';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { Logo } from '../ui/Logo';
 
 const navItems = [
   { label: 'Feed', href: '/' },
@@ -14,7 +15,7 @@ export function Navbar() {
     <header className={styles.header}>
       <nav className={styles.nav} aria-label="Navigasi utama">
         <Link href="/" className={styles.logo}>
-          Horizon
+          <Logo variant="compact" height={28} />
         </Link>
 
         <ul className={styles.navList} role="list">

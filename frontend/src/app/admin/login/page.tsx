@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import { Logo } from '@/components/ui/Logo';
 
 /**
  * Admin Login Page
@@ -51,6 +52,9 @@ export default function AdminLoginPage() {
     <main className={styles.loginPage}>
       <div className={styles.loginCard}>
         <div className={styles.loginHeader}>
+          <div className={styles.loginLogo}>
+            <Logo variant="full" height={48} />
+          </div>
           <h1 className={styles.loginTitle}>Admin</h1>
           <p className={styles.loginSubtitle}>
             Masuk ke dashboard Horizon Trader

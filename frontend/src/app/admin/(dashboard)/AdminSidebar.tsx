@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './layout.module.css';
+import { Logo } from '@/components/ui/Logo';
 
 /**
  * Navigation items for the admin sidebar.
@@ -73,7 +74,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         {/* Sidebar header */}
         <div className={styles.sidebarHeader}>
           <Link href="/admin" className={styles.sidebarLogo} onClick={onClose}>
-            Horizon <span className={styles.sidebarBadge}>Admin</span>
+            <Logo variant="compact" height={24} /> <span className={styles.sidebarBadge}>Admin</span>
           </Link>
         </div>
 
