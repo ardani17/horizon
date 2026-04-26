@@ -179,7 +179,37 @@ build_and_start() {
     ok "Semua container dimulai."
 }
 
-# ── 7. health_check ─────────────────────────
+# ── 7. run_migrations ───────────────────────
+
+run_migrations() {
+    info "Menjalankan database migrations ..."
+
+    # Wait for db to be healthy first
+    local max_wait=30
+    for i in $(seq 1 "$max_wait"); do
+        local status
+        status=$(docker inspect --format='{{.State.Health.Status}}' horizon-db 2>/dev/null || echo "unknown")
+        if [ "$status" = "healthy" ]; then
+            break
+        fi
+        sleep 2
+    done
+
+    # Run init.sh inside the db container (it skips already-applied migrations)
+    if docker exec \
+        -e POSTGRES_USER="${POSTGRES_USER}" \
+        -e POSTGRES_DB="${POSTGRES_DB}" \
+        -e ADMIN_USERNAME="${ADMIN_USERNAME}" \
+        -e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
+        -e MIGRATIONS_DIR="/docker-entrypoint-initdb.d/migrations" \
+        horizon-db bash /docker-entrypoint-initdb.d/init.sh; then
+        ok "Migrations selesai."
+    else
+        warn "Migration gagal — periksa log di atas."
+    fi
+}
+
+# ── 8. health_check ─────────────────────────
 
 health_check() {
     echo ""
@@ -250,6 +280,7 @@ main() {
     set_defaults
     setup_directories
     build_and_start
+    run_migrations
     health_check
 }
 
