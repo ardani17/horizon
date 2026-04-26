@@ -136,12 +136,12 @@ export class PublishHandler implements CommandHandler {
     // Convert cleaned text to HTML
     const contentHtml = textToHtml(cleanedText);
 
-    // Generate slug from first 8 words
-    const slugInput = extractFirstWords(text);
+    // Generate slug from cleaned text (without hashtags)
+    const slugInput = extractFirstWords(cleanedText);
     const slug = slugify(slugInput);
 
-    // Generate title from first 8 words
-    const title = extractFirstWords(text, 8);
+    // Generate title from cleaned text (without hashtags)
+    const title = extractFirstWords(cleanedText, 8);
 
     // Determine if replied message has media
     const hasPhoto = repliedMessage.photo && repliedMessage.photo.length > 0;

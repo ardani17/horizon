@@ -119,12 +119,12 @@ export class HashtagHandler implements CommandHandler {
     const cleanedText = stripRecognizedHashtags(text);
     const contentHtml = textToHtml(cleanedText);
 
-    // Step 3: Generate slug from first 8 words
-    const slugInput = extractFirstWords(text);
+    // Step 3: Generate slug from cleaned text (without hashtags)
+    const slugInput = extractFirstWords(cleanedText);
     const slug = slugify(slugInput);
 
-    // Step 4: Generate a title from the first 8 words (nullable per schema)
-    const title = extractFirstWords(text, 8);
+    // Step 4: Generate a title from cleaned text (without hashtags)
+    const title = extractFirstWords(cleanedText, 8);
 
     // Step 5: Determine if message has media
     const hasPhoto = ctx.message.photo && ctx.message.photo.length > 0;
