@@ -4,9 +4,11 @@ set -e
 # ============================================
 # Horizon Trader Platform — Database Initialization & Migration
 #
-# This script handles TWO scenarios:
-#   1. First-time init (empty database) — runs all migrations + seed
-#   2. Existing database — runs only NEW migrations that haven't been applied
+# This script handles THREE scenarios:
+#   1. Fresh database — runs all migrations + seed from scratch
+#   2. Existing database (pre-tracking) — detects already-applied migrations,
+#      seeds schema_migrations, then runs only NEW migrations
+#   3. Existing database (with tracking) — runs only NEW migrations
 #
 # It uses a `schema_migrations` table to track which migrations have run.
 # Safe to execute repeatedly (idempotent).
@@ -43,7 +45,27 @@ run_sql <<-'EOSQL'
 EOSQL
 
 # ----------------------------------------
-# 3. Run all migrations in order (skip already applied)
+# 3. Detect pre-existing database without tracking
+#    If tables exist but schema_migrations is empty,
+#    seed it with migrations that were already applied.
+# ----------------------------------------
+migration_count_in_table=$(run_sql -t -A -c "SELECT COUNT(*) FROM schema_migrations")
+users_table_exists=$(run_sql -t -A -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'users' AND table_schema = 'public'")
+
+if [ "$migration_count_in_table" -eq 0 ] && [ "$users_table_exists" -gt 0 ]; then
+    echo "=== Horizon DB: Detected existing database without migration tracking ==="
+    echo "  Seeding schema_migrations with previously applied migrations..."
+
+    # 001 and 002 were already applied (tables exist, seed data exists)
+    run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('001_create_schema.sql') ON CONFLICT DO NOTHING"
+    run_sql -c "INSERT INTO schema_migrations (filename) VALUES ('002_seed_data.sql') ON CONFLICT DO NOTHING"
+
+    echo "  [SEED] 001_create_schema.sql (already applied)"
+    echo "  [SEED] 002_seed_data.sql (already applied)"
+fi
+
+# ----------------------------------------
+# 4. Run all migrations in order (skip already applied)
 # ----------------------------------------
 echo "=== Horizon DB: Running migrations ==="
 
@@ -79,7 +101,7 @@ else
 fi
 
 # ----------------------------------------
-# 4. Override admin username if env var is set
+# 5. Override admin username if env var is set
 # ----------------------------------------
 if [ -n "${ADMIN_USERNAME}" ]; then
     echo "=== Horizon DB: Updating admin username to '${ADMIN_USERNAME}' ==="
@@ -89,7 +111,7 @@ EOSQL
 fi
 
 # ----------------------------------------
-# 5. Override admin password if env var is set
+# 6. Override admin password if env var is set
 # ----------------------------------------
 if [ -n "${ADMIN_PASSWORD}" ]; then
     echo "=== Horizon DB: Updating admin password ==="
