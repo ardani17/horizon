@@ -28,6 +28,12 @@ COPY frontend/ ./frontend/
 # This avoids the file tracing issues with hoisted node_modules
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# NEXT_PUBLIC_ vars must be available at build time for Next.js to inline them
+ARG NEXT_PUBLIC_TELEGRAM_BOT_NAME=""
+ENV NEXT_PUBLIC_TELEGRAM_BOT_NAME=${NEXT_PUBLIC_TELEGRAM_BOT_NAME}
+ARG NEXT_PUBLIC_SITE_URL=""
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+
 RUN npm run build --workspace=frontend
 
 # ---- Stage 3: Production runtime ----

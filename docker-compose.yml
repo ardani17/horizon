@@ -66,6 +66,8 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         FRONTEND_PORT: ${FRONTEND_PORT:-3000}
+        NEXT_PUBLIC_TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME:-}
+        NEXT_PUBLIC_SITE_URL: "https://${DOMAIN}"
     container_name: horizon-frontend
     restart: unless-stopped
     environment:
