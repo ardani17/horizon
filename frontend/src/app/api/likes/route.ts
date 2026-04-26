@@ -10,6 +10,73 @@ interface CountRow {
 }
 
 /**
+ * GET /api/likes?article_id=xxx&fingerprint=yyy — Get like count and liked status.
+ *
+ * Query params:
+ *   article_id (required) — The article UUID
+ *   fingerprint (optional) — If provided, also returns whether this fingerprint liked the article
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const params = request.nextUrl.searchParams;
+    const article_id = params.get('article_id');
+    const fingerprint = params.get('fingerprint');
+
+    if (!article_id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            error_code: 'VALIDATION_ERROR',
+            message: 'article_id diperlukan',
+            details: null,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 422 }
+      );
+    }
+
+    const countResult = await queryOne<CountRow>(
+      `SELECT COUNT(*)::text AS count FROM likes WHERE article_id = $1`,
+      [article_id]
+    );
+
+    const likeCount = parseInt(countResult?.count || '0', 10);
+
+    let liked = false;
+    if (fingerprint) {
+      const existing = await queryOne<LikeRow>(
+        `SELECT id FROM likes WHERE article_id = $1 AND fingerprint = $2`,
+        [article_id, fingerprint]
+      );
+      liked = !!existing;
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        liked,
+        like_count: likeCount,
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          error_code: 'INTERNAL_ERROR',
+          message: 'Gagal memuat data like',
+          details: null,
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/likes — Toggle like for an article.
  *
  * Body: { article_id: string, fingerprint: string }

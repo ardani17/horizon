@@ -40,13 +40,28 @@ export function LikeButton({ articleId, initialLikeCount }: LikeButtonProps) {
     const fp = generateFingerprint();
     setFingerprint(fp);
 
-    // Check if this fingerprint already liked this article
-    const likedArticles: string[] = JSON.parse(
-      localStorage.getItem('horizon_likes') || '[]'
-    );
-    if (likedArticles.includes(articleId)) {
-      setLiked(true);
+    // Fetch fresh like count and liked status from API (bypasses ISR cache)
+    async function fetchLikeStatus() {
+      try {
+        const res = await fetch(`/api/likes?article_id=${articleId}&fingerprint=${fp}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success) {
+          setLikeCount(data.data.like_count);
+          setLiked(data.data.liked);
+        }
+      } catch {
+        // Fall back to localStorage check
+        const likedArticles: string[] = JSON.parse(
+          localStorage.getItem('horizon_likes') || '[]'
+        );
+        if (likedArticles.includes(articleId)) {
+          setLiked(true);
+        }
+      }
     }
+
+    fetchLikeStatus();
   }, [articleId]);
 
   const toggleLike = useCallback(async () => {
