@@ -121,6 +121,9 @@ export interface Article {
   status: ArticleStatus;
   slug: string;
   created_at: Date;
+  telegram_message_id: number | null;
+  bot_reply_message_id: number | null;
+  telegram_chat_id: number | null;
 }
 
 /** Media table entity */

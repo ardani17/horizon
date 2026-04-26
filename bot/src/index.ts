@@ -93,14 +93,19 @@ async function insertArticle(
     source: string;
     status: string;
     slug: string;
+    telegram_message_id?: number | null;
+    bot_reply_message_id?: number | null;
+    telegram_chat_id?: number | null;
   },
   client: DbClient,
 ): Promise<{ id: string }> {
   const result = await queryOne<{ id: string }>(
-    `INSERT INTO articles (author_id, content_html, title, category, source, status, slug)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO articles (author_id, content_html, title, category, source, status, slug,
+       telegram_message_id, bot_reply_message_id, telegram_chat_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING id`,
-    [data.author_id, data.content_html, data.title, data.category, data.source, data.status, data.slug],
+    [data.author_id, data.content_html, data.title, data.category, data.source, data.status, data.slug,
+     data.telegram_message_id ?? null, data.bot_reply_message_id ?? null, data.telegram_chat_id ?? null],
     client,
   );
   if (!result) {
@@ -124,6 +129,29 @@ async function insertMedia(
      VALUES ($1, $2, $3, $4, $5)`,
     [data.article_id, data.file_url, data.media_type, data.file_key, data.file_size],
     client,
+  );
+}
+
+async function findArticleByMessageId(telegramMessageId: number) {
+  return queryOne<{
+    id: string; author_id: string; category: ArticleCategory; status: string;
+    telegram_message_id: number | null; bot_reply_message_id: number | null;
+    telegram_chat_id: number | null;
+  }>(
+    `SELECT id, author_id, category, status, telegram_message_id, bot_reply_message_id, telegram_chat_id
+     FROM articles WHERE telegram_message_id = $1`,
+    [telegramMessageId],
+  );
+}
+
+async function updateArticleStatus(articleId: string, status: string, client: DbClient) {
+  await execute('UPDATE articles SET status = $1 WHERE id = $2', [status, articleId], client);
+}
+
+async function updateArticleReplyMessageId(articleId: string, botReplyMessageId: number) {
+  await execute(
+    'UPDATE articles SET bot_reply_message_id = $1 WHERE id = $2',
+    [botReplyMessageId, articleId],
   );
 }
 
@@ -197,6 +225,7 @@ const sharedHandlerDeps = {
   getCreditReward,
   insertCreditTransaction,
   updateCreditBalance,
+  updateArticleReplyMessageId,
 };
 
 const mediaHandlerDeps = {
@@ -210,7 +239,14 @@ const mediaHandlerDeps = {
 // ---- Register Command Handlers ----
 
 const hashtagHandler = new HashtagHandler(mediaHandlerDeps);
-const publishHandler = new PublishHandler(mediaHandlerDeps);
+const publishHandler = new PublishHandler({
+  findArticleByMessageId,
+  withTransaction,
+  updateArticleStatus,
+  getCreditReward,
+  insertCreditTransaction,
+  updateCreditBalance,
+});
 const helpHandler = new HelpHandler(() => commandRegistry.listCommands());
 
 // Register hashtag triggers — each recognized hashtag maps to the same handler logic.
@@ -340,6 +376,21 @@ bot.on('message', async (ctx) => {
       } catch (err) {
         console.error('[Bot] Failed to send error reply:', err);
       }
+    },
+    replyWithMessageId: async (text: string): Promise<number> => {
+      const sent = await ctx.reply(text);
+      return sent.message_id;
+    },
+    deleteMessage: async (chatId: number, messageId: number): Promise<void> => {
+      try {
+        await bot.api.deleteMessage(chatId, messageId);
+      } catch (err) {
+        console.error(`[Bot] Failed to delete message ${messageId} in chat ${chatId}:`, err);
+      }
+    },
+    sendMessage: async (chatId: number, text: string): Promise<number> => {
+      const sent = await bot.api.sendMessage(chatId, text);
+      return sent.message_id;
     },
   };
 

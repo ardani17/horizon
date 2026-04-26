@@ -169,6 +169,9 @@ describe('Shared Types — Entity Interface Shapes', () => {
       status: ArticleStatus.PUBLISHED,
       slug: 'test-article-abc123',
       created_at: new Date(),
+      telegram_message_id: null,
+      bot_reply_message_id: null,
+      telegram_chat_id: null,
     };
     expect(article.category).toBe('trading');
     expect(article.source).toBe('telegram');

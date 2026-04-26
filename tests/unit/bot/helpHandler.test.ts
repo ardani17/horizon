@@ -35,6 +35,9 @@ function createMockContext(overrides: Partial<BotContext> = {}): BotContext {
     user: createMockUser(),
     reply: vi.fn().mockResolvedValue(undefined),
     replyWithError: vi.fn().mockResolvedValue(undefined),
+    replyWithMessageId: vi.fn().mockResolvedValue(1),
+    deleteMessage: vi.fn().mockResolvedValue(undefined),
+    sendMessage: vi.fn().mockResolvedValue(1),
     ...overrides,
   };
 }

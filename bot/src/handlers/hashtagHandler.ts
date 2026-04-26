@@ -37,6 +37,9 @@ export interface HashtagHandlerDeps {
       source: string;
       status: string;
       slug: string;
+      telegram_message_id?: number | null;
+      bot_reply_message_id?: number | null;
+      telegram_chat_id?: number | null;
     },
     client: DbClient,
   ) => Promise<{ id: string }>;
@@ -84,6 +87,12 @@ export interface HashtagHandlerDeps {
     fileId: string,
     mediaType: 'image' | 'video',
   ) => Promise<{ file_url: string; file_key: string; file_size: number } | null>;
+
+  /** Update the bot_reply_message_id on an article after the reply is sent */
+  updateArticleReplyMessageId: (
+    articleId: string,
+    botReplyMessageId: number,
+  ) => Promise<void>;
 }
 
 /**
@@ -146,6 +155,8 @@ export class HashtagHandler implements CommandHandler {
             source: 'telegram',
             status: articleStatus,
             slug,
+            telegram_message_id: ctx.message.message_id,
+            telegram_chat_id: ctx.message.chat.id,
           },
           client,
         );
@@ -223,10 +234,21 @@ export class HashtagHandler implements CommandHandler {
         return createdArticle;
       });
 
-      const replyMessage = articleStatus === 'published'
-        ? `Artikel berhasil dipublikasikan! Kategori: ${category}.`
-        : `Artikel berhasil dikirim! Kategori: ${category}. Menunggu persetujuan admin untuk dipublikasikan.`;
-      await ctx.reply(replyMessage);
+      if (articleStatus === 'draft') {
+        // Member draft: capture reply message ID for later cleanup
+        const replyMessageId = await ctx.replyWithMessageId(
+          `Artikel dikirim! Menunggu persetujuan admin. Kategori: ${category}`,
+        );
+        await this.deps.updateArticleReplyMessageId(article.id, replyMessageId);
+      } else {
+        // Admin publish: reply, then clean up messages (best-effort)
+        const replyMessageId = await ctx.replyWithMessageId(
+          `Artikel dipublikasikan! Kategori: ${category}`,
+        );
+        // Best-effort message cleanup — deleteMessage never throws
+        await ctx.deleteMessage(ctx.message.chat.id, ctx.message.message_id);
+        await ctx.deleteMessage(ctx.message.chat.id, replyMessageId);
+      }
     } catch (error) {
       await ctx.reply('Gagal mempublikasikan artikel. Silakan coba lagi.');
       throw error;

@@ -46,6 +46,12 @@ export interface BotContext {
   reply(text: string): Promise<void>;
   /** Send a formatted error reply to the chat */
   replyWithError(error: AppError): Promise<void>;
+  /** Send a text reply and return the sent message's message_id for tracking */
+  replyWithMessageId(text: string): Promise<number>;
+  /** Delete a message in any chat (best-effort, never throws) */
+  deleteMessage(chatId: number, messageId: number): Promise<void>;
+  /** Send a message to any chat and return the sent message's message_id */
+  sendMessage(chatId: number, text: string): Promise<number>;
 }
 
 /**

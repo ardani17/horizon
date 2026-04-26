@@ -4,9 +4,6 @@
 
 import type { CommandHandler } from '../commands/types';
 import type { BotContext } from '../middleware/types';
-import { parseHashtags, mapHashtagToCategory, stripRecognizedHashtags } from '../utils/hashtag';
-import { textToHtml } from '../../../shared/utils/textToHtml';
-import { slugify, extractFirstWords } from '../../../shared/utils/slugify';
 import type { ArticleCategory, SourceType } from '../../../shared/types/index';
 import type { DbClient } from '../../../shared/db/query';
 
@@ -24,36 +21,30 @@ const CATEGORY_TO_SOURCE_TYPE: Record<string, SourceType> = {
  * Each function represents a database or service operation.
  */
 export interface PublishHandlerDeps {
+  /** Find an article by its Telegram message ID */
+  findArticleByMessageId: (
+    telegramMessageId: number,
+  ) => Promise<{
+    id: string;
+    author_id: string;
+    category: ArticleCategory;
+    status: string;
+    telegram_message_id: number | null;
+    bot_reply_message_id: number | null;
+    telegram_chat_id: number | null;
+  } | null>;
+
   /** Run a callback inside a database transaction */
   withTransaction: <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
-  /** Insert an article record and return the created row (with id) */
-  insertArticle: (
-    data: {
-      author_id: string;
-      content_html: string;
-      title: string | null;
-      category: ArticleCategory;
-      source: string;
-      status: string;
-      slug: string;
-    },
-    client: DbClient,
-  ) => Promise<{ id: string }>;
-
-  /** Insert a media record linked to an article */
-  insertMedia: (
-    data: {
-      article_id: string;
-      file_url: string;
-      media_type: string;
-      file_key: string | null;
-      file_size: number | null;
-    },
+  /** Update article status */
+  updateArticleStatus: (
+    articleId: string,
+    status: string,
     client: DbClient,
   ) => Promise<void>;
 
-  /** Look up the credit reward for a category. Returns null if inactive. */
+  /** Look up the credit reward for a category */
   getCreditReward: (
     category: string,
     client: DbClient,
@@ -78,25 +69,19 @@ export interface PublishHandlerDeps {
     amount: number,
     client: DbClient,
   ) => Promise<void>;
-
-  /** Download media from Telegram and upload to storage. Returns file metadata. */
-  uploadMedia?: (
-    fileId: string,
-    mediaType: 'image' | 'video',
-  ) => Promise<{ file_url: string; file_key: string; file_size: number } | null>;
 }
 
 /**
  * /publish command handler for the Telegram Bot.
  *
- * Admin-only command that publishes a replied-to message as an article.
- * The admin replies to any message in the group with `/publish`, and the
- * bot creates an article from the replied-to message content. Category is
- * determined from hashtags in the replied-to message, defaulting to "general".
+ * Admin-only command that approves an existing draft article by replying
+ * to the original member message with `/publish`. The handler looks up
+ * the article by `telegram_message_id`, transitions it to `published`,
+ * and awards credits to the original author.
  *
  * Non-admin users receive a notification that only admins can use this command.
  *
- * Validates: Requirements 9.1, 9.2, 9.3, 9.4
+ * Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 3.1, 3.2, 3.3, 3.4
  */
 export class PublishHandler implements CommandHandler {
   readonly name = '/publish';
@@ -107,135 +92,85 @@ export class PublishHandler implements CommandHandler {
   constructor(private readonly deps: PublishHandlerDeps) {}
 
   async execute(ctx: BotContext): Promise<void> {
-    // Requirement 9.4: Reject non-admin users
+    // Requirement 2.6: Admin-only check
     if (ctx.user.role !== 'admin') {
       await ctx.reply('Hanya admin yang dapat menggunakan command /publish.');
       return;
     }
 
-    // Requirement 9.1: Must be used as a reply to another message
-    const repliedMessage = ctx.message.reply_to_message;
-    if (!repliedMessage) {
+    // Requirement 2.7: Must be a reply to a message
+    if (!ctx.message.reply_to_message) {
       await ctx.reply('Gunakan /publish dengan membalas pesan yang ingin dipublikasikan.');
       return;
     }
 
-    const text = repliedMessage.text ?? '';
-    if (!text.trim()) {
-      await ctx.reply('Pesan yang dibalas tidak mengandung teks untuk dipublikasikan.');
+    // Requirement 2.1: Look up the article by the replied-to message's ID
+    const article = await this.deps.findArticleByMessageId(ctx.message.reply_to_message.message_id);
+
+    // Requirement 2.2: No article found
+    if (!article) {
+      await ctx.reply('Pesan ini bukan artikel draft');
       return;
     }
 
-    // Requirement 9.2, 9.3: Determine category from hashtags, default "general"
-    const hashtags = parseHashtags(text);
-    const category = mapHashtagToCategory(hashtags);
+    // Requirement 2.3: Must be a draft
+    if (article.status !== 'draft') {
+      await ctx.reply('Artikel sudah dipublikasikan');
+      return;
+    }
 
-    // Strip recognized hashtags before converting to HTML (Requirement 10.5)
-    const cleanedText = stripRecognizedHashtags(text);
-
-    // Convert cleaned text to HTML
-    const contentHtml = textToHtml(cleanedText);
-
-    // Generate slug from cleaned text (without hashtags)
-    const slugInput = extractFirstWords(cleanedText);
-    const slug = slugify(slugInput);
-
-    // Generate title from cleaned text (without hashtags)
-    const title = extractFirstWords(cleanedText, 8);
-
-    // Determine if replied message has media
-    const hasPhoto = repliedMessage.photo && repliedMessage.photo.length > 0;
-    const hasVideo = !!repliedMessage.video;
-
+    // Requirements 2.4, 2.5, 3.1, 3.2, 3.3, 3.4: Approve the draft and award credits inside a transaction
     try {
       await this.deps.withTransaction(async (client) => {
-        // Insert article with the admin as author
-        const createdArticle = await this.deps.insertArticle(
-          {
-            author_id: ctx.user.id,
-            content_html: contentHtml,
-            title,
-            category,
-            source: 'telegram',
-            status: 'published',
-            slug,
-          },
-          client,
-        );
+        // Update article status to published
+        await this.deps.updateArticleStatus(article.id, 'published', client);
 
-        // Handle media attachments from the replied-to message
-        if (this.deps.uploadMedia) {
-          if (hasPhoto) {
-            const photo = repliedMessage.photo![repliedMessage.photo!.length - 1];
-            try {
-              const mediaResult = await this.deps.uploadMedia(photo.file_id, 'image');
-              if (mediaResult) {
-                await this.deps.insertMedia(
-                  {
-                    article_id: createdArticle.id,
-                    file_url: mediaResult.file_url,
-                    media_type: 'image',
-                    file_key: mediaResult.file_key,
-                    file_size: mediaResult.file_size,
-                  },
-                  client,
-                );
-              }
-            } catch {
-              // Media upload failure: log and continue (Req 10.4)
-            }
-          }
-
-          if (hasVideo) {
-            try {
-              const mediaResult = await this.deps.uploadMedia(repliedMessage.video!.file_id, 'video');
-              if (mediaResult) {
-                await this.deps.insertMedia(
-                  {
-                    article_id: createdArticle.id,
-                    file_url: mediaResult.file_url,
-                    media_type: 'video',
-                    file_key: mediaResult.file_key,
-                    file_size: mediaResult.file_size,
-                  },
-                  client,
-                );
-              }
-            } catch {
-              // Media upload failure: log and continue (Req 10.4)
-            }
-          }
-        }
-
-        // Award credit based on category settings
-        const creditSettings = await this.deps.getCreditReward(category, client);
+        // Award credits to the ORIGINAL AUTHOR (not the approving admin)
+        const creditSettings = await this.deps.getCreditReward(article.category, client);
         if (creditSettings && creditSettings.is_active && creditSettings.credit_reward > 0) {
-          const sourceType = CATEGORY_TO_SOURCE_TYPE[category] ?? 'article_general';
+          const sourceType = CATEGORY_TO_SOURCE_TYPE[article.category] ?? 'article_general';
           await this.deps.insertCreditTransaction(
             {
-              user_id: ctx.user.id,
+              user_id: article.author_id,
               amount: creditSettings.credit_reward,
               transaction_type: 'earned',
               source_type: sourceType,
-              source_id: createdArticle.id,
+              source_id: article.id,
               description: null,
             },
             client,
           );
           await this.deps.updateCreditBalance(
-            ctx.user.id,
+            article.author_id,
             creditSettings.credit_reward,
             client,
           );
         }
-
-        return createdArticle;
       });
-
-      await ctx.reply(`Artikel berhasil dipublikasikan! Kategori: ${category}.`);
     } catch (error) {
       await ctx.reply('Gagal mempublikasikan artikel. Silakan coba lagi.');
       throw error;
     }
+
+    // Requirements 4.1, 4.2, 4.3, 4.4, 4.5: Message cleanup (all best-effort)
+    // Delete original member message
+    if (article.telegram_chat_id != null && article.telegram_message_id != null) {
+      await ctx.deleteMessage(article.telegram_chat_id, article.telegram_message_id);
+    }
+
+    // Delete bot reply message
+    if (article.telegram_chat_id != null && article.bot_reply_message_id != null) {
+      await ctx.deleteMessage(article.telegram_chat_id, article.bot_reply_message_id);
+    }
+
+    // Delete admin's /publish command message
+    await ctx.deleteMessage(ctx.message.chat.id, ctx.message.message_id);
+
+    // Send confirmation and auto-delete after ~5 seconds (fire-and-forget)
+    const chatId = ctx.message.chat.id;
+    const confirmationId = await ctx.sendMessage(chatId, 'Artikel berhasil dipublikasikan!');
+    setTimeout(async () => {
+      await ctx.deleteMessage(chatId, confirmationId);
+    }, 5000);
   }
 }

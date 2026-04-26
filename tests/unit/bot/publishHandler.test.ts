@@ -1,5 +1,6 @@
 // ============================================
 // Horizon Trader Platform — Publish Handler Tests
+// Updated for the draft-approval flow (publish-approval-flow spec)
 // ============================================
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -29,7 +30,7 @@ function createRepliedMessage(overrides: Partial<TelegramMessage> = {}): Telegra
     from: { id: 12345, is_bot: false, first_name: 'OriginalSender' },
     chat: { id: -100123, type: 'supergroup' },
     date: Math.floor(Date.now() / 1000),
-    text: 'This is the original message content to publish',
+    text: 'This is the original message content',
     ...overrides,
   };
 }
@@ -47,15 +48,29 @@ function createMockContext(overrides: Partial<BotContext> = {}): BotContext {
     user: createMockUser(),
     reply: vi.fn().mockResolvedValue(undefined),
     replyWithError: vi.fn().mockResolvedValue(undefined),
+    replyWithMessageId: vi.fn().mockResolvedValue(1),
+    deleteMessage: vi.fn().mockResolvedValue(undefined),
+    sendMessage: vi.fn().mockResolvedValue(999),
     ...overrides,
   };
 }
 
+/** Default mock draft article returned by findArticleByMessageId */
+const mockDraftArticle = {
+  id: 'article-uuid-draft',
+  author_id: 'member-uuid-456',
+  category: 'general' as const,
+  status: 'draft',
+  telegram_message_id: 42,
+  bot_reply_message_id: 55,
+  telegram_chat_id: -100123,
+};
+
 function createMockDeps(overrides: Partial<PublishHandlerDeps> = {}): PublishHandlerDeps {
   return {
+    findArticleByMessageId: vi.fn().mockResolvedValue({ ...mockDraftArticle }),
     withTransaction: vi.fn().mockImplementation(async (fn) => fn('mock-client')),
-    insertArticle: vi.fn().mockResolvedValue({ id: 'article-uuid-publish' }),
-    insertMedia: vi.fn().mockResolvedValue(undefined),
+    updateArticleStatus: vi.fn().mockResolvedValue(undefined),
     getCreditReward: vi.fn().mockResolvedValue({ credit_reward: 3, is_active: true }),
     insertCreditTransaction: vi.fn().mockResolvedValue(undefined),
     updateCreditBalance: vi.fn().mockResolvedValue(undefined),
@@ -85,7 +100,7 @@ describe('PublishHandler', () => {
     });
   });
 
-  describe('admin permission enforcement (Req 9.4)', () => {
+  describe('admin permission enforcement (Req 2.6)', () => {
     it('should reject non-admin users with notification message', async () => {
       ctx.user = createMockUser({ role: 'member' });
 
@@ -94,17 +109,17 @@ describe('PublishHandler', () => {
       expect(ctx.reply).toHaveBeenCalledWith(
         expect.stringContaining('admin'),
       );
-      expect(deps.insertArticle).not.toHaveBeenCalled();
+      expect(deps.findArticleByMessageId).not.toHaveBeenCalled();
     });
 
     it('should allow admin users to proceed', async () => {
       await handler.execute(ctx);
 
-      expect(deps.insertArticle).toHaveBeenCalled();
+      expect(deps.findArticleByMessageId).toHaveBeenCalled();
     });
   });
 
-  describe('reply-to-message requirement (Req 9.1)', () => {
+  describe('reply-to-message requirement (Req 2.7)', () => {
     it('should reject when not replying to a message', async () => {
       ctx.message.reply_to_message = undefined;
 
@@ -113,143 +128,74 @@ describe('PublishHandler', () => {
       expect(ctx.reply).toHaveBeenCalledWith(
         expect.stringContaining('membalas pesan'),
       );
-      expect(deps.insertArticle).not.toHaveBeenCalled();
-    });
-
-    it('should reject when replied message has no text', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({ text: undefined });
-
-      await handler.execute(ctx);
-
-      expect(ctx.reply).toHaveBeenCalledWith(
-        expect.stringContaining('tidak mengandung teks'),
-      );
-      expect(deps.insertArticle).not.toHaveBeenCalled();
-    });
-
-    it('should reject when replied message has only whitespace', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({ text: '   ' });
-
-      await handler.execute(ctx);
-
-      expect(ctx.reply).toHaveBeenCalledWith(
-        expect.stringContaining('tidak mengandung teks'),
-      );
-      expect(deps.insertArticle).not.toHaveBeenCalled();
+      expect(deps.findArticleByMessageId).not.toHaveBeenCalled();
     });
   });
 
-  describe('category from hashtags (Req 9.2, 9.3)', () => {
-    it('should default to "general" when no hashtags in replied message', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'A message without any hashtags',
-      });
-
+  describe('article lookup by message ID (Req 2.1, 2.2)', () => {
+    it('should look up article by replied-to message ID', async () => {
       await handler.execute(ctx);
 
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].category).toBe('general');
+      expect(deps.findArticleByMessageId).toHaveBeenCalledWith(42);
     });
 
-    it('should map #trading to "trading" category', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'My trading journal #trading for today',
-      });
+    it('should reply "Pesan ini bukan artikel draft" when no article found', async () => {
+      vi.mocked(deps.findArticleByMessageId).mockResolvedValue(null);
 
       await handler.execute(ctx);
 
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].category).toBe('trading');
-    });
-
-    it('should map #cerita to "life_story" category', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'A personal story #cerita about my journey',
-      });
-
-      await handler.execute(ctx);
-
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].category).toBe('life_story');
+      expect(ctx.reply).toHaveBeenCalledWith('Pesan ini bukan artikel draft');
     });
   });
 
-  describe('article creation from replied message', () => {
-    it('should create article from replied message content', async () => {
-      await handler.execute(ctx);
-
-      expect(deps.insertArticle).toHaveBeenCalledWith(
-        expect.objectContaining({
-          author_id: 'admin-uuid-123',
-          source: 'telegram',
-          status: 'published',
-        }),
-        'mock-client',
-      );
-    });
-
-    it('should convert replied message text to HTML', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Hello world from the original message',
+  describe('draft status check (Req 2.3)', () => {
+    it('should reply "Artikel sudah dipublikasikan" when article is not draft', async () => {
+      vi.mocked(deps.findArticleByMessageId).mockResolvedValue({
+        ...mockDraftArticle,
+        status: 'published',
       });
 
       await handler.execute(ctx);
 
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].content_html).toContain('<p>');
-      expect(call[0].content_html).toContain('Hello world from the original message');
-    });
-
-    it('should generate a valid slug from replied message text', async () => {
-      await handler.execute(ctx);
-
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].slug).toBeTruthy();
-      expect(call[0].slug).toMatch(/^[a-z0-9-]+$/);
-    });
-
-    it('should set title from first 8 words of replied message', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'One two three four five six seven eight nine ten',
-      });
-
-      await handler.execute(ctx);
-
-      const call = vi.mocked(deps.insertArticle).mock.calls[0];
-      expect(call[0].title).toBe('One two three four five six seven eight');
+      expect(ctx.reply).toHaveBeenCalledWith('Artikel sudah dipublikasikan');
     });
   });
 
-  describe('atomic transaction', () => {
-    it('should execute all operations within a transaction', async () => {
+  describe('draft approval (Req 2.4, 2.5)', () => {
+    it('should update article status to published inside a transaction', async () => {
       await handler.execute(ctx);
 
       expect(deps.withTransaction).toHaveBeenCalledTimes(1);
-      expect(deps.insertArticle).toHaveBeenCalledWith(expect.anything(), 'mock-client');
+      expect(deps.updateArticleStatus).toHaveBeenCalledWith(
+        'article-uuid-draft',
+        'published',
+        'mock-client',
+      );
     });
   });
 
-  describe('credit award', () => {
-    it('should award credit based on category', async () => {
+  describe('credit award to original author (Req 3.1, 3.2, 3.3, 3.4)', () => {
+    it('should award credit to the original author, not the admin', async () => {
       await handler.execute(ctx);
 
       expect(deps.getCreditReward).toHaveBeenCalledWith('general', 'mock-client');
       expect(deps.insertCreditTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
-          user_id: 'admin-uuid-123',
+          user_id: 'member-uuid-456',
           amount: 3,
           transaction_type: 'earned',
           source_type: 'article_general',
-          source_id: 'article-uuid-publish',
+          source_id: 'article-uuid-draft',
         }),
         'mock-client',
       );
-      expect(deps.updateCreditBalance).toHaveBeenCalledWith('admin-uuid-123', 3, 'mock-client');
+      expect(deps.updateCreditBalance).toHaveBeenCalledWith('member-uuid-456', 3, 'mock-client');
     });
 
     it('should use correct source_type for trading category', async () => {
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Trading journal #trading',
+      vi.mocked(deps.findArticleByMessageId).mockResolvedValue({
+        ...mockDraftArticle,
+        category: 'trading',
       });
 
       await handler.execute(ctx);
@@ -290,92 +236,32 @@ describe('PublishHandler', () => {
     });
   });
 
-  describe('media handling from replied message', () => {
-    it('should upload photo from replied message when uploadMedia is available', async () => {
-      const mockUploadMedia = vi.fn().mockResolvedValue({
-        file_url: 'https://r2.example.com/photo.jpg',
-        file_key: 'photo-key',
-        file_size: 12345,
-      });
-      deps.uploadMedia = mockUploadMedia;
-
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Photo message',
-        photo: [
-          { file_id: 'small-photo', file_unique_id: 'u1', width: 100, height: 100 },
-          { file_id: 'large-photo', file_unique_id: 'u2', width: 800, height: 600 },
-        ],
-      });
-
+  describe('message cleanup (Req 4.1, 4.2, 4.3, 4.4)', () => {
+    it('should delete original member message', async () => {
       await handler.execute(ctx);
 
-      expect(mockUploadMedia).toHaveBeenCalledWith('large-photo', 'image');
-      expect(deps.insertMedia).toHaveBeenCalledWith(
-        expect.objectContaining({
-          article_id: 'article-uuid-publish',
-          file_url: 'https://r2.example.com/photo.jpg',
-          media_type: 'image',
-        }),
-        'mock-client',
+      expect(ctx.deleteMessage).toHaveBeenCalledWith(-100123, 42);
+    });
+
+    it('should delete bot reply message', async () => {
+      await handler.execute(ctx);
+
+      expect(ctx.deleteMessage).toHaveBeenCalledWith(-100123, 55);
+    });
+
+    it('should delete admin /publish command message', async () => {
+      await handler.execute(ctx);
+
+      expect(ctx.deleteMessage).toHaveBeenCalledWith(-100123, 100);
+    });
+
+    it('should send confirmation message', async () => {
+      await handler.execute(ctx);
+
+      expect(ctx.sendMessage).toHaveBeenCalledWith(
+        -100123,
+        expect.stringContaining('berhasil'),
       );
-    });
-
-    it('should upload video from replied message when uploadMedia is available', async () => {
-      const mockUploadMedia = vi.fn().mockResolvedValue({
-        file_url: 'https://r2.example.com/video.mp4',
-        file_key: 'video-key',
-        file_size: 99999,
-      });
-      deps.uploadMedia = mockUploadMedia;
-
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Video message',
-        video: { file_id: 'video-id', file_unique_id: 'vu1', width: 1920, height: 1080, duration: 30 },
-      });
-
-      await handler.execute(ctx);
-
-      expect(mockUploadMedia).toHaveBeenCalledWith('video-id', 'video');
-      expect(deps.insertMedia).toHaveBeenCalledWith(
-        expect.objectContaining({
-          article_id: 'article-uuid-publish',
-          file_url: 'https://r2.example.com/video.mp4',
-          media_type: 'video',
-        }),
-        'mock-client',
-      );
-    });
-
-    it('should continue publishing article when media upload fails', async () => {
-      deps.uploadMedia = vi.fn().mockRejectedValue(new Error('Upload failed'));
-
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Photo message with failing upload',
-        photo: [
-          { file_id: 'photo-id', file_unique_id: 'u1', width: 800, height: 600 },
-        ],
-      });
-
-      await handler.execute(ctx);
-
-      expect(deps.insertArticle).toHaveBeenCalled();
-      expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining('berhasil'));
-    });
-
-    it('should not attempt media upload when uploadMedia is not provided', async () => {
-      deps.uploadMedia = undefined;
-
-      ctx.message.reply_to_message = createRepliedMessage({
-        text: 'Photo message',
-        photo: [
-          { file_id: 'photo-id', file_unique_id: 'u1', width: 800, height: 600 },
-        ],
-      });
-
-      await handler.execute(ctx);
-
-      expect(deps.insertMedia).not.toHaveBeenCalled();
-      expect(deps.insertArticle).toHaveBeenCalled();
     });
   });
 
@@ -392,24 +278,6 @@ describe('PublishHandler', () => {
       vi.mocked(deps.withTransaction).mockRejectedValue(dbError);
 
       await expect(handler.execute(ctx)).rejects.toThrow('Connection lost');
-    });
-  });
-
-  describe('reply messages', () => {
-    it('should send success reply mentioning the category', async () => {
-      await handler.execute(ctx);
-
-      expect(ctx.reply).toHaveBeenCalledWith(
-        expect.stringContaining('general'),
-      );
-    });
-
-    it('should mention "berhasil" in success reply', async () => {
-      await handler.execute(ctx);
-
-      expect(ctx.reply).toHaveBeenCalledWith(
-        expect.stringContaining('berhasil'),
-      );
     });
   });
 });

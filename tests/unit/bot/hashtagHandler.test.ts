@@ -34,6 +34,9 @@ function createMockContext(overrides: Partial<BotContext> = {}): BotContext {
     user: createMockUser(),
     reply: vi.fn().mockResolvedValue(undefined),
     replyWithError: vi.fn().mockResolvedValue(undefined),
+    replyWithMessageId: vi.fn().mockResolvedValue(1),
+    deleteMessage: vi.fn().mockResolvedValue(undefined),
+    sendMessage: vi.fn().mockResolvedValue(1),
     ...overrides,
   };
 }
@@ -46,6 +49,7 @@ function createMockDeps(overrides: Partial<HashtagHandlerDeps> = {}): HashtagHan
     getCreditReward: vi.fn().mockResolvedValue({ credit_reward: 10, is_active: true }),
     insertCreditTransaction: vi.fn().mockResolvedValue(undefined),
     updateCreditBalance: vi.fn().mockResolvedValue(undefined),
+    updateArticleReplyMessageId: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -132,6 +136,8 @@ describe('HashtagHandler', () => {
 
   describe('atomic transaction', () => {
     it('should execute all operations within a transaction', async () => {
+      // Use admin user so credits are awarded (member drafts skip credit logic)
+      ctx.user = createMockUser({ role: 'admin' });
       await handler.execute(ctx);
 
       expect(deps.withTransaction).toHaveBeenCalledTimes(1);
@@ -143,7 +149,8 @@ describe('HashtagHandler', () => {
   });
 
   describe('credit award', () => {
-    it('should award credit based on category settings', async () => {
+    it('should award credit based on category settings for admin', async () => {
+      ctx.user = createMockUser({ role: 'admin' });
       ctx.message.text = '#trading Trading journal';
       vi.mocked(deps.getCreditReward).mockResolvedValue({ credit_reward: 10, is_active: true });
 
@@ -151,7 +158,7 @@ describe('HashtagHandler', () => {
 
       expect(deps.insertCreditTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
-          user_id: 'user-uuid-123',
+          user_id: ctx.user.id,
           amount: 10,
           transaction_type: 'earned',
           source_type: 'article_trading',
@@ -159,10 +166,11 @@ describe('HashtagHandler', () => {
         }),
         'mock-client',
       );
-      expect(deps.updateCreditBalance).toHaveBeenCalledWith('user-uuid-123', 10, 'mock-client');
+      expect(deps.updateCreditBalance).toHaveBeenCalledWith(ctx.user.id, 10, 'mock-client');
     });
 
     it('should use correct source_type for life_story category', async () => {
+      ctx.user = createMockUser({ role: 'admin' });
       ctx.message.text = '#cerita My life story';
       vi.mocked(deps.getCreditReward).mockResolvedValue({ credit_reward: 5, is_active: true });
 
@@ -178,6 +186,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should use correct source_type for general category', async () => {
+      ctx.user = createMockUser({ role: 'admin' });
       ctx.message.text = '#random General content';
       vi.mocked(deps.getCreditReward).mockResolvedValue({ credit_reward: 3, is_active: true });
 
@@ -193,6 +202,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should skip credit award when category reward is inactive', async () => {
+      ctx.user = createMockUser({ role: 'admin' });
       vi.mocked(deps.getCreditReward).mockResolvedValue({ credit_reward: 10, is_active: false });
 
       await handler.execute(ctx);
@@ -202,6 +212,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should skip credit award when credit_reward is 0', async () => {
+      ctx.user = createMockUser({ role: 'admin' });
       vi.mocked(deps.getCreditReward).mockResolvedValue({ credit_reward: 0, is_active: true });
 
       await handler.execute(ctx);
@@ -211,6 +222,7 @@ describe('HashtagHandler', () => {
     });
 
     it('should skip credit award when no credit settings found', async () => {
+      ctx.user = createMockUser({ role: 'admin' });
       vi.mocked(deps.getCreditReward).mockResolvedValue(null);
 
       await handler.execute(ctx);
@@ -295,8 +307,8 @@ describe('HashtagHandler', () => {
       expect(deps.insertArticle).toHaveBeenCalled();
       // Media insert should not be called since upload failed
       expect(deps.insertMedia).not.toHaveBeenCalled();
-      // Success reply should still be sent
-      expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining('berhasil'));
+      // Success reply should still be sent (member draft uses replyWithMessageId)
+      expect(ctx.replyWithMessageId).toHaveBeenCalledWith(expect.stringContaining('Kategori'));
     });
 
     it('should not attempt media upload when uploadMedia is not provided', async () => {
@@ -377,22 +389,43 @@ describe('HashtagHandler', () => {
   });
 
   describe('reply messages', () => {
-    it('should send success reply with category after publishing', async () => {
+    it('should send success reply with category after member draft', async () => {
       ctx.message.text = '#trading My journal entry';
       await handler.execute(ctx);
 
-      expect(ctx.reply).toHaveBeenCalledWith(
+      expect(ctx.replyWithMessageId).toHaveBeenCalledWith(
         expect.stringContaining('trading'),
       );
     });
 
-    it('should include category name in success reply', async () => {
+    it('should include category name in member draft reply', async () => {
       ctx.message.text = '#cerita My story';
       await handler.execute(ctx);
 
-      expect(ctx.reply).toHaveBeenCalledWith(
+      expect(ctx.replyWithMessageId).toHaveBeenCalledWith(
         expect.stringContaining('life_story'),
       );
+    });
+
+    it('should use ctx.replyWithMessageId for admin publishes and clean up messages', async () => {
+      const mockReplyMessageId = 42;
+      ctx.user = createMockUser({ role: 'admin' });
+      ctx.message.text = '#trading Admin article';
+      ctx.message.message_id = 10;
+      ctx.message.chat.id = -100123;
+      vi.mocked(ctx.replyWithMessageId).mockResolvedValue(mockReplyMessageId);
+
+      await handler.execute(ctx);
+
+      // Should use replyWithMessageId (not ctx.reply) for admin publishes
+      expect(ctx.replyWithMessageId).toHaveBeenCalledWith(
+        expect.stringContaining('dipublikasikan'),
+      );
+      // Should delete original admin message
+      expect(ctx.deleteMessage).toHaveBeenCalledWith(-100123, 10);
+      // Should delete bot reply message
+      expect(ctx.deleteMessage).toHaveBeenCalledWith(-100123, mockReplyMessageId);
+      expect(ctx.deleteMessage).toHaveBeenCalledTimes(2);
     });
   });
 });
