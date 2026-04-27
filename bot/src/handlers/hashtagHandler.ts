@@ -114,7 +114,7 @@ export class HashtagHandler implements CommandHandler {
   constructor(private readonly deps: HashtagHandlerDeps) {}
 
   async execute(ctx: BotContext): Promise<void> {
-    const text = ctx.message.text ?? '';
+    const text = ctx.message.text ?? ctx.message.caption ?? '';
     if (!text.trim()) {
       await ctx.reply('Pesan tidak mengandung teks untuk dipublikasikan.');
       return;

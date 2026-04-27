@@ -42,7 +42,7 @@ export class CommandRegistry implements ICommandRegistry {
    * 3. Return null if no handler matches.
    */
   resolve(message: TelegramMessage): CommandHandler | null {
-    const text = message.text?.trim();
+    const text = (message.text ?? message.caption)?.trim();
     if (!text) {
       return null;
     }
