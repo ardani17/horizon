@@ -30,7 +30,7 @@ import type { DbClient } from '../../shared/db/query';
 
 const PORT = Number(process.env.BOT_PORT) || 4000;
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const GROUP_CHAT_ID = Number(process.env.TELEGRAM_GROUP_CHAT_ID) || 0;
+const GROUP_CHAT_ID = Number(process.env.TELEGRAM_GROUP_ID) || 0;
 
 // ---- Bot Instance ----
 
