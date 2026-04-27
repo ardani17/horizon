@@ -22,7 +22,7 @@ Platform komunitas trader dengan integrasi Telegram Bot dan website bergaya retr
 - **Bot:** Node.js, Express, grammy (Telegram Bot framework)
 - **Database:** PostgreSQL 16
 - **Media Storage:** Cloudflare R2
-- **Deployment:** Docker Compose, Nginx reverse proxy (container), Certbot SSL auto-renewal
+- **Deployment:** Docker Compose, aaPanel Nginx reverse proxy, Cloudflare SSL
 
 ## Penggunaan Telegram Bot
 
@@ -45,24 +45,32 @@ Ternyata penting banget untuk menentukan entry point...
 ```
 
 Bot akan otomatis:
-1. Membuat artikel di website dengan kategori **Trading**
-2. Menghapus `#trading` dari konten artikel
+1. Membuat artikel di website (draft untuk member, published untuk admin)
+2. Menghapus hashtag dari konten artikel
 3. Mengupload foto/video jika ada lampiran
-4. Memberikan **10 kredit** ke akun pengirim
+4. **Member:** Reply "Menunggu persetujuan admin" — artikel perlu di-approve admin via `/publish`
+5. **Admin:** Langsung publish, memberikan kredit, dan menghapus pesan dari grup
 
 ### Slash Commands
 
 | Command | Akses | Deskripsi |
 |---------|-------|-----------|
-| `/publish` | Admin | Balas pesan orang lain dengan `/publish` untuk mempublikasikannya |
+| `/publish` | Admin | Balas pesan draft member dengan `/publish` untuk approve dan publikasikan |
 | `/help` | Semua | Tampilkan daftar command yang tersedia |
 
 **Contoh `/publish` (admin only):**
 ```
-[Balas pesan anggota grup]
+[Balas pesan draft member di grup]
 /publish
 ```
-Bot akan mempublikasikan pesan yang dibalas sebagai artikel. Kategori ditentukan dari hashtag di pesan asli, default ke "general". Hashtag yang dikenali akan dihapus dari konten.
+Bot akan:
+1. Mencari artikel draft berdasarkan message ID pesan yang dibalas
+2. Mengubah status artikel dari `draft` ke `published`
+3. Memberikan kredit ke penulis asli (bukan admin)
+4. Menghapus pesan asli, balasan bot, dan command `/publish` dari grup
+5. Mengirim konfirmasi sementara yang auto-delete setelah 5 detik
+
+> **Catatan:** `/publish` hanya bisa approve artikel draft yang sudah dibuat via hashtag. Tidak bisa mempublikasikan pesan biasa.
 
 ### Sistem Kredit
 
@@ -161,7 +169,84 @@ Setelah deploy berhasil:
 - Admin: `https://yourdomain.com/admin`
 - Bot API: `https://yourdomain.com/api/bot/status`
 
-### 3. Setup Telegram Webhook
+### 3. Setup Reverse Proxy (aaPanel)
+
+Platform ini menggunakan **2 port** yang perlu di-reverse-proxy oleh aaPanel Nginx:
+
+| Service | Host Port | Container Port | Path |
+|---------|-----------|----------------|------|
+| Frontend (Next.js) | `127.0.0.1:3888` | `3000` | `/`, `/_next/*` |
+| Bot (Express) | `127.0.0.1:4888` | `4000` | `/api/bot/*`, `/webhook/telegram` |
+
+**Langkah setup di aaPanel:**
+
+1. Buka aaPanel → **Website** → **Add Site** → masukkan domain (misal `horizon.cloudnexify.com`)
+2. Buka site config → **Config** (ikon Nginx)
+3. Paste location blocks berikut di dalam `server {}` block:
+
+```nginx
+# --- Frontend (semua request default) ---
+location / {
+    proxy_pass http://127.0.0.1:3888;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+
+# --- Bot API routes ---
+location /api/bot/ {
+    proxy_pass http://127.0.0.1:4888;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+# --- Telegram Webhook ---
+location = /webhook/telegram {
+    proxy_pass http://127.0.0.1:4888;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+# --- Next.js Static Assets (long-term cache) ---
+location /_next/static/ {
+    proxy_pass http://127.0.0.1:3888;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+
+# --- Next.js Image Optimization ---
+location /_next/image {
+    proxy_pass http://127.0.0.1:3888;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+> **Penting:** Jangan gunakan fitur "Reverse Proxy" bawaan aaPanel karena hanya support 1 target. Paste langsung di Nginx config supaya bisa routing ke 2 port berbeda berdasarkan path.
+
+File referensi lengkap: `aapanel-nginx.conf`
+
+Port host bisa dikustomisasi via `.env`:
+```env
+FRONTEND_HOST_PORT=3888   # default
+BOT_HOST_PORT=4888        # default
+```
+
+### 4. Setup Telegram Webhook
 
 Webhook otomatis dikonstruksi dari variabel `DOMAIN` (`https://<DOMAIN>/webhook/telegram`). Setelah deploy, set webhook:
 
@@ -171,7 +256,7 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
   -d '{"url": "https://yourdomain.com/webhook/telegram"}'
 ```
 
-### 4. Re-deploy & Update
+### 5. Re-deploy & Update
 
 Script `deploy-docker.sh` bersifat idempotent — aman dijalankan berulang kali:
 
@@ -183,7 +268,7 @@ bash deploy-docker.sh
 - Selalu build fresh image untuk memastikan perubahan kode ter-deploy
 - Data database aman (bind mount di `${DB_DATA_DIR}`)
 
-### 5. Backup Database
+### 6. Backup Database
 
 Data PostgreSQL disimpan di host directory (default: `./data/postgres`). Untuk backup:
 
@@ -290,7 +375,7 @@ horizon-trader-platform/
 │   └── docker-entrypoint.sh       # Custom entrypoint for envsubst
 ├── docker-compose.yml      # Full Docker stack (semua service)
 ├── deploy-docker.sh        # Deploy script untuk bare server
-├── aapanel-nginx.conf      # Legacy — referensi config AAPanel lama
+├── aapanel-nginx.conf      # Referensi config Nginx untuk aaPanel reverse proxy
 └── .env.example            # Template environment variables (dokumentasi lengkap)
 ```
 
