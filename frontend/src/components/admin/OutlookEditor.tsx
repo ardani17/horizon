@@ -15,6 +15,12 @@ export interface InlineImageEntry {
   blobUrl: string;
 }
 
+export interface OutlookInitialData {
+  title: string;
+  content_html: string;
+  status: string;
+}
+
 interface InlineImage {
   id: string;
   file: File;
@@ -26,6 +32,8 @@ interface OutlookEditorProps {
   onSubmit: (data: OutlookFormData, images: InlineImageEntry[]) => Promise<void>;
   /** Cancel handler */
   onCancel?: () => void;
+  /** Optional initial data for edit mode */
+  initialData?: OutlookInitialData;
   /** Submit button label */
   submitLabel?: string;
   /** Whether the form is submitting */
@@ -44,12 +52,13 @@ let imageIdCounter = 0;
 export function OutlookEditor({
   onSubmit,
   onCancel,
+  initialData,
   submitLabel = 'Publikasikan',
   submitting = false,
 }: OutlookEditorProps) {
-  const [title, setTitle] = useState('');
-  const [contentHtml, setContentHtml] = useState('');
-  const [status, setStatus] = useState('published');
+  const [title, setTitle] = useState(initialData?.title ?? '');
+  const [contentHtml, setContentHtml] = useState(initialData?.content_html ?? '');
+  const [status, setStatus] = useState(initialData?.status ?? 'published');
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
   const [inlineImages, setInlineImages] = useState<InlineImage[]>([]);
   const [error, setError] = useState('');

@@ -11,7 +11,7 @@ const OutlookEditor = dynamic(
   () => import('@/components/admin/OutlookEditor').then((mod) => ({ default: mod.OutlookEditor })),
   { ssr: false }
 );
-import styles from '../../articles/articles.module.css';
+import styles from '../outlook.module.css';
 
 /**
  * Admin New Outlook Article Page
@@ -65,8 +65,8 @@ export default function AdminNewOutlookPage() {
         throw new Error(json.error?.message || 'Gagal membuat artikel Outlook');
       }
 
-      // 3. Redirect to articles list
-      router.push('/admin/articles');
+      // 3. Redirect to outlook list
+      router.push('/admin/outlook');
     } catch (err) {
       setSubmitting(false);
       throw err; // Let OutlookEditor handle the error display
@@ -76,7 +76,7 @@ export default function AdminNewOutlookPage() {
   return (
     <div>
       <div className={styles.pageHeader}>
-        <Link href="/admin/articles" className={styles.backLink}>
+        <Link href="/admin/outlook" className={styles.backLink}>
           ← Kembali
         </Link>
         <h2>Outlook Baru</h2>
@@ -84,7 +84,7 @@ export default function AdminNewOutlookPage() {
       <div className={styles.editorCard}>
         <OutlookEditor
           onSubmit={handleSubmit}
-          onCancel={() => router.push('/admin/articles')}
+          onCancel={() => router.push('/admin/outlook')}
           submitLabel="Publikasikan Outlook"
           submitting={submitting}
         />
