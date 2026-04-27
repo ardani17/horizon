@@ -256,7 +256,52 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
   -d '{"url": "https://yourdomain.com/webhook/telegram"}'
 ```
 
-### 5. Re-deploy & Update
+### 5. Troubleshooting Bot
+
+Jika bot tidak merespon di grup Telegram, ikuti langkah-langkah berikut:
+
+**1. Cek bot service running:**
+```bash
+curl -s http://127.0.0.1:4888/api/bot/status
+```
+Harus return JSON dengan `"status":"running"` dan `groupChatId` bukan `0`.
+
+**2. Cek webhook terdaftar di Telegram:**
+```bash
+curl -s "https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo" | python3 -m json.tool
+```
+Perhatikan:
+- `url` harus `https://yourdomain.com/webhook/telegram`
+- `last_error_message` — jika ada `404 Not Found`, reverse proxy belum benar
+- `pending_update_count` — jumlah pesan yang menunggu dikirim ke bot
+
+**3. Test webhook endpoint via POST (bukan GET):**
+```bash
+# GET akan return "Cannot GET /webhook/telegram" — ini NORMAL
+# Telegram kirim webhook via POST, jadi test harus pakai POST:
+curl -s -X POST https://yourdomain.com/webhook/telegram \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+Jika return 200 atau response kosong, webhook sudah benar.
+
+**4. Cek log bot realtime:**
+```bash
+docker compose logs -f bot
+```
+Kirim pesan di grup dan lihat apakah ada log `[Bot] Received message` atau error.
+
+**5. Masalah umum:**
+
+| Gejala | Penyebab | Solusi |
+|--------|----------|--------|
+| `groupChatId: 0` | `TELEGRAM_GROUP_ID` tidak di-set di `.env` | Tambahkan `TELEGRAM_GROUP_ID=-100xxxxxxxxxx` lalu `docker compose restart bot` |
+| Webhook `404 Not Found` | aaPanel belum proxy `/webhook/telegram` ke port 4888 | Tambahkan location block di Nginx config (lihat section Reverse Proxy) |
+| `Cannot GET /webhook/telegram` | Normal — webhook hanya terima POST | Test dengan `curl -X POST`, bukan GET |
+| Bot tidak reply di grup | Bot belum jadi admin di grup | Jadikan bot sebagai admin di grup Telegram |
+| Bot tidak terima pesan | Privacy mode aktif | Matikan via BotFather: `/setprivacy` → Disable |
+
+### 6. Re-deploy & Update
 
 Script `deploy-docker.sh` bersifat idempotent — aman dijalankan berulang kali:
 
@@ -268,7 +313,7 @@ bash deploy-docker.sh
 - Selalu build fresh image untuk memastikan perubahan kode ter-deploy
 - Data database aman (bind mount di `${DB_DATA_DIR}`)
 
-### 6. Backup Database
+### 7. Backup Database
 
 Data PostgreSQL disimpan di host directory (default: `./data/postgres`). Untuk backup:
 
