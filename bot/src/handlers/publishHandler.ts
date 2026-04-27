@@ -153,22 +153,17 @@ export class PublishHandler implements CommandHandler {
     }
 
     // Requirements 4.1, 4.2, 4.3, 4.4, 4.5: Message cleanup (all best-effort)
-    console.log(`[PublishHandler] Starting message cleanup for article ${article.id}`);
-
     // Delete original member message
     if (article.telegram_chat_id != null && article.telegram_message_id != null) {
-      console.log(`[PublishHandler] Deleting original message ${article.telegram_message_id} in chat ${article.telegram_chat_id}`);
       await ctx.deleteMessage(article.telegram_chat_id, article.telegram_message_id);
     }
 
     // Delete bot reply message
     if (article.telegram_chat_id != null && article.bot_reply_message_id != null) {
-      console.log(`[PublishHandler] Deleting bot reply ${article.bot_reply_message_id} in chat ${article.telegram_chat_id}`);
       await ctx.deleteMessage(article.telegram_chat_id, article.bot_reply_message_id);
     }
 
     // Delete admin's /publish command message
-    console.log(`[PublishHandler] Deleting admin command ${ctx.message.message_id} in chat ${ctx.message.chat.id}`);
     await ctx.deleteMessage(ctx.message.chat.id, ctx.message.message_id);
 
     // Send confirmation and auto-delete after ~5 seconds (fire-and-forget)
