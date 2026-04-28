@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.r2.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'image.cloudnexify.com',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
   },
