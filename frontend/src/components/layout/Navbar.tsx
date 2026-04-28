@@ -29,6 +29,9 @@ export function Navbar() {
         </ul>
 
         <div className={styles.navActions}>
+          <Link href="/admin/login" className={styles.adminLink} title="Admin">
+            Admin
+          </Link>
           <ThemeToggle />
           <MobileMenu navItems={navItems.map((i) => ({ label: i.label, href: i.href }))} />
         </div>
