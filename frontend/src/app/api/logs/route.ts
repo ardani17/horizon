@@ -69,38 +69,38 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       conditions.push(
-        `(al.action ILIKE ${idx} OR CAST(al.details AS TEXT) ILIKE ${idx})`,
+        `(al.action ILIKE $${idx} OR CAST(al.details AS TEXT) ILIKE $${idx})`,
       );
       values.push(`%${search}%`);
       idx++;
     }
 
     if (actorId) {
-      conditions.push(`al.actor_id = ${idx}`);
+      conditions.push(`al.actor_id = $${idx}`);
       values.push(actorId);
       idx++;
     }
 
     if (actionFilter) {
-      conditions.push(`al.action = ${idx}`);
+      conditions.push(`al.action = $${idx}`);
       values.push(actionFilter);
       idx++;
     }
 
     if (targetTypeFilter) {
-      conditions.push(`al.target_type = ${idx}`);
+      conditions.push(`al.target_type = $${idx}`);
       values.push(targetTypeFilter);
       idx++;
     }
 
     if (fromDate) {
-      conditions.push(`al.created_at >= ${idx}`);
+      conditions.push(`al.created_at >= $${idx}`);
       values.push(fromDate);
       idx++;
     }
 
     if (toDate) {
-      conditions.push(`al.created_at <= ${idx}`);
+      conditions.push(`al.created_at <= $${idx}`);
       values.push(toDate);
       idx++;
     }
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
          LEFT JOIN users u ON al.actor_id = u.id
          ${whereClause}
          ORDER BY al.created_at DESC
-         LIMIT ${idx} OFFSET ${idx + 1}`,
+         LIMIT $${idx} OFFSET $${idx + 1}`,
         [...values, pageSize, offset],
       ),
       query<{ count: string }>(
