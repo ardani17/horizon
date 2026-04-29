@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash, createHmac } from 'crypto';
 import { query, queryOne } from '@shared/db';
 import { validateSession } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rateLimit';
+import { RATE_LIMITS } from '@shared/constants';
 
 interface CommentRow {
   id: string;
@@ -29,11 +31,6 @@ interface TelegramAuthData {
 
 /**
  * Verify Telegram Login Widget data using HMAC-SHA256.
- *
- * Algorithm (per Telegram docs):
- * 1. Secret key = SHA-256(bot_token)
- * 2. Data-check-string = sorted key=value pairs (excluding hash), joined by \n
- * 3. Verify: HMAC-SHA256(secret_key, data_check_string) === hash
  */
 function verifyTelegramAuth(authData: TelegramAuthData): boolean {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -41,17 +38,13 @@ function verifyTelegramAuth(authData: TelegramAuthData): boolean {
 
   const { hash, ...data } = authData;
 
-  // Build data-check-string: key=value pairs sorted alphabetically, joined by \n
   const checkString = Object.entries(data)
     .filter(([, value]) => value !== undefined && value !== null)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');
 
-  // Secret key = SHA-256 hash of the bot token
   const secretKey = createHash('sha256').update(botToken).digest();
-
-  // HMAC-SHA256 of data-check-string using the secret key
   const hmac = createHmac('sha256', secretKey)
     .update(checkString)
     .digest('hex');
@@ -59,12 +52,9 @@ function verifyTelegramAuth(authData: TelegramAuthData): boolean {
   return hmac === hash;
 }
 
-/**
- * Check if Telegram auth data is not too old (max 24 hours).
- */
 function isTelegramAuthFresh(authDate: number): boolean {
   const now = Math.floor(Date.now() / 1000);
-  const maxAge = 86400; // 24 hours
+  const maxAge = 86400;
   return now - authDate < maxAge;
 }
 
@@ -174,14 +164,8 @@ async function handleAdminList(request: NextRequest) {
 /**
  * GET /api/comments?article_id={id}
  *
- * Public mode: Fetch visible comments for a specific article (oldest first).
- *   Requires article_id query param.
- *
- * Admin mode: Fetch all comments with pagination, search, and filters.
- *   Triggered when admin=true query param is present. Requires valid admin session.
- *   Supports: page, pageSize, search, status query params.
- *
- * Requirements: 26.8
+ * Public mode: visible comments for a specific article (oldest first).
+ * Admin mode: all comments with pagination (admin=true query param).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -192,9 +176,7 @@ export async function GET(request: NextRequest) {
       return handleAdminList(request);
     }
 
-    // Public mode: visible comments for a specific article
     const articleId = searchParams.get('article_id');
-
     if (!articleId) {
       return errorResponse('VALIDATION_ERROR', 'article_id diperlukan', 422);
     }
@@ -226,22 +208,20 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/comments
- *
- * Create a new comment on an article.
- *
- * Body (anonymous):
- *   { article_id, content, is_anonymous: true, display_name?: string }
- *
- * Body (Telegram auth):
- *   { article_id, content, is_anonymous: false, telegram_auth: TelegramAuthData }
+ * POST /api/comments — Create a new comment on an article.
  */
 export async function POST(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, {
+    max: RATE_LIMITS.COMMENTS_MAX,
+    windowMs: RATE_LIMITS.WINDOW_MS,
+    prefix: 'comments',
+  });
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await request.json();
     const { article_id, content, is_anonymous, display_name, telegram_auth } = body;
 
-    // Validate required fields
     if (!article_id) {
       return errorResponse('VALIDATION_ERROR', 'article_id diperlukan', 422);
     }
@@ -260,27 +240,22 @@ export async function POST(request: NextRequest) {
     let commentIsAnonymous = true;
 
     if (!is_anonymous && telegram_auth) {
-      // Telegram authenticated comment
       const authData = telegram_auth as TelegramAuthData;
 
-      // Verify the Telegram auth hash
       if (!verifyTelegramAuth(authData)) {
         return errorResponse('AUTH_INVALID', 'Verifikasi Telegram gagal', 401);
       }
 
-      // Check auth freshness
       if (!isTelegramAuthFresh(authData.auth_date)) {
         return errorResponse('AUTH_INVALID', 'Sesi Telegram telah kedaluwarsa. Silakan login ulang.', 401);
       }
 
-      // Find or create user by telegram_id
       let user = await queryOne<UserRow>(
         `SELECT id, username FROM users WHERE telegram_id = $1`,
         [authData.id],
       );
 
       if (!user) {
-        // Create a new user record for this Telegram user
         const username = authData.username || authData.first_name;
         const result = await query<UserRow>(
           `INSERT INTO users (telegram_id, username, role)
@@ -299,7 +274,6 @@ export async function POST(request: NextRequest) {
         commentIsAnonymous = false;
       }
     } else {
-      // Anonymous comment
       commentDisplayName =
         typeof display_name === 'string' && display_name.trim()
           ? display_name.trim().slice(0, 100)
@@ -307,7 +281,6 @@ export async function POST(request: NextRequest) {
       commentIsAnonymous = true;
     }
 
-    // Insert comment
     const result = await query<CommentRow>(
       `INSERT INTO comments (article_id, user_id, display_name, content, is_anonymous, status)
        VALUES ($1, $2, $3, $4, $5, $6)

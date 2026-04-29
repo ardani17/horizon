@@ -15,7 +15,8 @@
     "next": "^16.2.4",
     "pg": "^8.12.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "isomorphic-dompurify": "2.16.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

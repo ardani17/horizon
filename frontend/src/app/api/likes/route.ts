@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query, queryOne } from '@shared/db';
+import { checkRateLimit } from '@/lib/rateLimit';
+import { RATE_LIMITS } from '@shared/constants';
 
 interface LikeRow {
   id: string;
@@ -86,6 +88,13 @@ export async function GET(request: NextRequest) {
  * it is removed (unlike). Otherwise a new like is inserted.
  */
 export async function POST(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, {
+    max: RATE_LIMITS.LIKES_MAX,
+    windowMs: RATE_LIMITS.WINDOW_MS,
+    prefix: 'likes',
+  });
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await request.json();
     const { article_id, fingerprint } = body;
