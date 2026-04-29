@@ -120,7 +120,7 @@ export async function generateMetadata({
     return { title: 'Outlook Tidak Ditemukan' };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const outlookUrl = `${baseUrl}/outlook/${article.slug}`;
 
   const plainText = article.content_html.replace(/<[^>]*>/g, '').trim();
@@ -178,7 +178,7 @@ export default async function OutlookDetailPage({
     ? plainText.slice(0, 120).trimEnd() + '…'
     : plainText;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const outlookUrl = `${baseUrl}/outlook/${article.slug}`;
 
   // Find cover image (first image media)

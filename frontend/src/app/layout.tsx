@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description:
     'Komunitas trader — jurnal trading, cerita kehidupan, dan analisa market.',
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   ),
   alternates: {
     canonical: '/',
