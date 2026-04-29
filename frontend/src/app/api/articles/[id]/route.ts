@@ -126,7 +126,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     if (category !== undefined) {
-      const validCategories = ['trading', 'life_story', 'general'];
+      const validCategories = ['trading', 'life_story', 'general', 'outlook'];
       if (!validCategories.includes(category)) {
         return NextResponse.json(
           { success: false, error: { error_code: 'VALIDATION_ERROR', message: 'Kategori tidak valid', details: { valid: validCategories }, timestamp: new Date().toISOString() } },

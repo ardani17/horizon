@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize';
 import styles from './OutlookEditor.module.css';
 
 export interface OutlookFormData {
@@ -357,7 +358,7 @@ export function OutlookEditor({
           ) : (
             <div
               className={styles.preview}
-              dangerouslySetInnerHTML={{ __html: contentHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentHtml) }}
             />
           )}
         </div>

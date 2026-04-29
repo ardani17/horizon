@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize';
 import styles from './ArticleEditor.module.css';
 
 export interface MediaAttachment {
@@ -334,7 +335,7 @@ export function ArticleEditor({
           ) : (
             <div
               className={styles.preview}
-              dangerouslySetInnerHTML={{ __html: contentHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentHtml) }}
             />
           )}
         </div>
