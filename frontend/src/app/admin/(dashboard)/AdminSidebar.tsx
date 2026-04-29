@@ -16,6 +16,7 @@ const navSections = [
       { label: 'Dashboard', href: '/admin', icon: '📊' },
       { label: 'Articles', href: '/admin/articles', icon: '📝' },
       { label: 'Outlook', href: '/admin/outlook', icon: '📈' },
+      { label: 'Blog', href: '/admin/blog', icon: '📰' },
     ],
   },
   {

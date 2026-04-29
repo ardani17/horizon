@@ -1,0 +1,150 @@
+.main {
+  padding: var(--space-6) var(--space-4);
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.header h1 {
+  font-size: var(--text-2xl);
+  display: inline-block;
+}
+
+.description {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* Search */
+.searchForm {
+  margin-bottom: var(--space-5);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Article list */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Pagination */
+.pagination {
+  margin-top: var(--space-6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pageLink,
+.pageLinkActive,
+.pageEllipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: var(--color-bg);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pageLink:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-primary);
+}
+
+.pageLinkActive {
+  background: var(--color-primary);
+  color: var(--color-primary-fg, #fff);
+  border-color: var(--color-primary);
+  pointer-events: none;
+}
+
+.pageLinkDisabled {
+  composes: pageLink;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.pageEllipsis {
+  border: none;
+  background: none;
+  cursor: default;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: var(--space-12) var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.emptyIcon {
+  font-size: var(--text-4xl);
+  margin-bottom: var(--space-4);
+}
+
+.emptyText {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-2);
+}
+
+.emptySubtext {
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .container {
+    flex-direction: column;
+  }
+
+  .header h1 {
+    font-size: var(--text-xl);
+  }
+}

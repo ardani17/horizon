@@ -16,6 +16,8 @@ export const PAGINATION = {
   MAX_PAGE_SIZE: 100,
   /** Maximum allowed offset for public endpoints */
   MAX_OFFSET: 10000,
+  /** Default page size for blog listing */
+  BLOG_PAGE_SIZE: 12,
 } as const;
 
 /** Rate limiting (requests per window) */
@@ -49,7 +51,7 @@ export const CONTENT = {
 } as const;
 
 /** Valid article categories */
-export const VALID_CATEGORIES = ['trading', 'life_story', 'general', 'outlook'] as const;
+export const VALID_CATEGORIES = ['trading', 'life_story', 'general', 'outlook', 'blog'] as const;
 export type ArticleCategory = (typeof VALID_CATEGORIES)[number];
 
 /** Valid article statuses */

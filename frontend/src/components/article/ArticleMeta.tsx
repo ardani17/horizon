@@ -12,6 +12,7 @@ const categoryLabels: Record<string, string> = {
   life_story: 'Life & Coffee',
   general: 'General',
   outlook: 'Outlook',
+  blog: 'Blog',
 };
 
 /** Estimate read time from HTML content (average 200 words per minute) */

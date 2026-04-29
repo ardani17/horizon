@@ -10,6 +10,7 @@ export const ArticleCategory = {
   LIFE_STORY: 'life_story',
   GENERAL: 'general',
   OUTLOOK: 'outlook',
+  BLOG: 'blog',
 } as const;
 
 export type ArticleCategory = (typeof ArticleCategory)[keyof typeof ArticleCategory];
@@ -35,6 +36,7 @@ export type ArticleStatus = (typeof ArticleStatus)[keyof typeof ArticleStatus];
 export const ArticleSource = {
   TELEGRAM: 'telegram',
   DASHBOARD: 'dashboard',
+  WORDPRESS: 'wordpress',
 } as const;
 
 export type ArticleSource = (typeof ArticleSource)[keyof typeof ArticleSource];

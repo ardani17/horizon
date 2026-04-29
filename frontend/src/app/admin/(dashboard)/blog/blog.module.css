@@ -1,0 +1,61 @@
+/* ============================================
+   Admin Blog Pages — Styles
+   ============================================ */
+
+/* List page */
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 300px;
+}
+
+.titleLink {
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleLink:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.noTitle {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.slug {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: nowrap;
+}
+
+.actionBtn {
+  padding: var(--space-1) var(--space-2);
+  min-height: 32px;
+  min-width: 32px;
+  font-size: var(--text-sm);
+}
+
+.actionBtnDanger {
+  border-color: var(--color-danger);
+}
+
+.actionBtnDanger:hover {
+  background-color: var(--color-danger);
+  color: #ffffff;
+}

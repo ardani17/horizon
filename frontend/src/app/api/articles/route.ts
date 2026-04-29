@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validCategories = ['trading', 'life_story', 'general', 'outlook'];
+    const validCategories = ['trading', 'life_story', 'general', 'outlook', 'blog'];
     if (!validCategories.includes(category)) {
       return NextResponse.json(
         { success: false, error: { error_code: 'VALIDATION_ERROR', message: 'Kategori tidak valid', details: { valid: validCategories }, timestamp: new Date().toISOString() } },

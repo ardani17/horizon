@@ -7,6 +7,7 @@ import { Logo } from '../ui/Logo';
 const navItems = [
   { label: 'Feed', href: '/' },
   { label: 'Outlook', href: '/outlook' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Gallery', href: '/gallery' },
 ] as const;
 
