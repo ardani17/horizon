@@ -34,11 +34,69 @@ const PER_PAGE = 100;
  * @param {object} post — A single post from the WP REST API (with _embed).
  * @returns {{ title: string, contentHtml: string, excerpt: string, slug: string, date: string, featuredImageUrl: string|null }}
  */
+/**
+ * Sanitize WordPress HTML to fix lazy-loaded images.
+ *
+ * WordPress plugins (e.g. Smush, LazyLoad) move the real image URL to
+ * `data-src` / `data-srcset` and leave `src` empty or with a placeholder.
+ * Since we don't ship the WP lazy-load JS, we need to promote `data-src`
+ * back to `src` so images render immediately.
+ *
+ * Also strips the `lazyload` CSS class and `data-src` / `data-srcset` /
+ * `data-sizes` attributes after promotion.
+ */
+function sanitizeWordPressHtml(html) {
+  return html
+    // For images that have data-src: promote data-src → src
+    .replace(/<img\b[^>]*>/gi, (imgTag) => {
+      let tag = imgTag;
+
+      // If data-src exists, use it as src
+      const dataSrcMatch = tag.match(/data-src="([^"]+)"/);
+      if (dataSrcMatch) {
+        const realSrc = dataSrcMatch[1];
+        // Replace existing src or add src
+        if (/\bsrc="[^"]*"/.test(tag)) {
+          tag = tag.replace(/\bsrc="[^"]*"/, `src="${realSrc}"`);
+        } else {
+          tag = tag.replace('<img', `<img src="${realSrc}"`);
+        }
+      }
+
+      // If data-srcset exists, promote to srcset
+      const dataSrcsetMatch = tag.match(/data-srcset="([^"]+)"/);
+      if (dataSrcsetMatch) {
+        const realSrcset = dataSrcsetMatch[1];
+        if (/\bsrcset="[^"]*"/.test(tag)) {
+          tag = tag.replace(/\bsrcset="[^"]*"/, `srcset="${realSrcset}"`);
+        } else {
+          tag = tag.replace('<img', `<img srcset="${realSrcset}"`);
+        }
+      }
+
+      // Remove data-src, data-srcset, data-sizes attributes
+      tag = tag.replace(/\s*data-src="[^"]*"/g, '');
+      tag = tag.replace(/\s*data-srcset="[^"]*"/g, '');
+      tag = tag.replace(/\s*data-sizes="[^"]*"/g, '');
+
+      // Remove lazyload class
+      tag = tag.replace(/\blazyload\b/g, '');
+      // Clean up empty class attribute or extra spaces in class
+      tag = tag.replace(/class="\s*"/g, '');
+      tag = tag.replace(/class="([^"]*)"/g, (m, classes) => {
+        const cleaned = classes.replace(/\s+/g, ' ').trim();
+        return cleaned ? `class="${cleaned}"` : '';
+      });
+
+      return tag;
+    });
+}
+
 function extractPostData(post) {
   const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0];
   return {
     title: post.title.rendered,
-    contentHtml: post.content.rendered,
+    contentHtml: sanitizeWordPressHtml(post.content.rendered),
     excerpt: post.excerpt.rendered,
     slug: post.slug,
     date: post.date,
@@ -46,7 +104,8 @@ function extractPostData(post) {
   };
 }
 
-module.exports = { extractPostData };
+
+module.exports = { extractPostData, sanitizeWordPressHtml };
 
 // ---------------------------------------------------------------------------
 // Database helpers
