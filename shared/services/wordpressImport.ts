@@ -112,7 +112,7 @@ async function fetchPage(page: number): Promise<FetchPageResult> {
   }
 
   const totalPages = parseInt(res.headers.get('X-WP-TotalPages') || '1', 10);
-  const posts: WordPressPost[] = await res.json();
+  const posts = (await res.json()) as WordPressPost[];
   return { posts, totalPages };
 }
 
