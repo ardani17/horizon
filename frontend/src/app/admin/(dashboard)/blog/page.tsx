@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { DataTable, StatusBadge } from '@/components/admin';
+import { DataTable, StatusBadge, ImportPanel } from '@/components/admin';
 import type { Column } from '@/components/admin';
 import styles from './blog.module.css';
 
@@ -170,6 +170,7 @@ export default function AdminBlogPage() {
   return (
     <div>
       <h2>Manajemen Blog</h2>
+      <ImportPanel onImportComplete={fetchArticles} />
       <DataTable
         columns={columns}
         data={articles}

@@ -99,6 +99,15 @@ export const CommentStatus = {
 
 export type CommentStatus = (typeof CommentStatus)[keyof typeof CommentStatus];
 
+/** Import job statuses */
+export const ImportJobStatus = {
+  RUNNING: 'running',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+} as const;
+
+export type ImportJobStatus = (typeof ImportJobStatus)[keyof typeof ImportJobStatus];
+
 // ---- Database Entity Interfaces ----
 
 /** Users table entity */
@@ -215,6 +224,50 @@ export interface AdminSession {
   created_at: Date;
 }
 
+/** WordPress import jobs table entity */
+export interface WordPressImportJob {
+  id: string;
+  status: ImportJobStatus;
+  started_at: Date;
+  completed_at: Date | null;
+  total_fetched: number;
+  total_imported: number;
+  total_skipped: number;
+  total_failed: number;
+  error_message: string | null;
+  triggered_by: string;
+}
+
+/** Progress counts used during WordPress import */
+export interface ImportCounts {
+  total_fetched: number;
+  total_imported: number;
+  total_skipped: number;
+  total_failed: number;
+}
+
+/** WordPress API post shape (subset) */
+export interface WordPressPost {
+  title: { rendered: string };
+  content: { rendered: string };
+  excerpt: { rendered: string };
+  slug: string;
+  date: string;
+  _embedded?: {
+    'wp:featuredmedia'?: Array<{ source_url?: string }>;
+  };
+}
+
+/** Extracted post data from WordPress */
+export interface ExtractedPost {
+  title: string;
+  contentHtml: string;
+  excerpt: string;
+  slug: string;
+  date: string;
+  featuredImageUrl: string | null;
+}
+
 // ---- API Response Types ----
 
 /** Successful API response wrapper */
@@ -261,6 +314,8 @@ export const ErrorCode = {
   MEDIA_SIZE_EXCEEDED: 'MEDIA_SIZE_EXCEEDED',
   /** 429 — Too many requests */
   RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
+  /** 409 — Import job already running */
+  IMPORT_ALREADY_RUNNING: 'IMPORT_ALREADY_RUNNING',
   /** 500 — Internal server error */
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
@@ -278,5 +333,6 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, number> = {
   [ErrorCode.MEDIA_TYPE_INVALID]: 422,
   [ErrorCode.MEDIA_SIZE_EXCEEDED]: 422,
   [ErrorCode.RATE_LIMIT_EXCEEDED]: 429,
+  [ErrorCode.IMPORT_ALREADY_RUNNING]: 409,
   [ErrorCode.INTERNAL_ERROR]: 500,
 };
