@@ -29,8 +29,31 @@ const PER_PAGE = 100;
  */
 export function sanitizeWordPressHtml(html: string): string {
   return html
+    // Remove <figure> blocks whose only <img> has an unrecoverable SVG placeholder src
+    // (Smush lazy-load sometimes strips the real URL entirely)
+    .replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/gi, (figureBlock: string) => {
+      // Only target figures that contain a single img with SVG placeholder
+      const imgMatch = figureBlock.match(/<img\b[^>]*>/i);
+      if (imgMatch) {
+        const img = imgMatch[0];
+        const hasSvgPlaceholder = /\bsrc="data:image\/svg\+xml[^"]*"/.test(img);
+        const hasDataSrc = /\bdata-src="[^"]*"/.test(img);
+        // If src is a placeholder and there's no data-src to recover from, remove the figure
+        if (hasSvgPlaceholder && !hasDataSrc) {
+          return '';
+        }
+      }
+      return figureBlock;
+    })
     .replace(/<img\b[^>]*>/gi, (imgTag: string) => {
       let tag = imgTag;
+
+      // Remove standalone img tags with unrecoverable SVG placeholder
+      const hasSvgPlaceholder = /\bsrc="data:image\/svg\+xml[^"]*"/.test(tag);
+      const hasDataSrc = /\bdata-src="[^"]*"/.test(tag);
+      if (hasSvgPlaceholder && !hasDataSrc) {
+        return '';
+      }
 
       // If data-src exists, use it as src
       const dataSrcMatch = tag.match(/data-src="([^"]+)"/);
@@ -68,6 +91,9 @@ export function sanitizeWordPressHtml(html: string): string {
         const cleaned = classes.replace(/\s+/g, ' ').trim();
         return cleaned ? `class="${cleaned}"` : '';
       });
+
+      // Remove Smush placeholder inline styles
+      tag = tag.replace(/\s*style="[^"]*--smush-placeholder[^"]*"/g, '');
 
       return tag;
     });
